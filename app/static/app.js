@@ -254,9 +254,9 @@ function renderAll() {
 async function load() {
   try {
     const [n, l, v] = await Promise.all([
-      fetch("/api/nowcast").then((r) => { if (!r.ok) throw new Error(r.status); return r.json(); }),
-      fetch("/api/log?hours=72&horizon=3").then((r) => r.json()),
-      fetch("/api/verification").then((r) => r.json()),
+      fetch("api/nowcast").then((r) => { if (!r.ok) throw new Error(r.status); return r.json(); }),
+      fetch("api/log?hours=72&horizon=3").then((r) => r.json()),
+      fetch("api/verification").then((r) => r.json()),
     ]);
     DATA = n; LOG = l; VER = v;
     renderAll();

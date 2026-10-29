@@ -1,0 +1,9 @@
+# Minimal environment of the serverless nowcaster (GitHub Actions). Versions match the ones the
+# models were trained and pickled with.
+numpy==2.5.4
+pandas==3.1.0
+scipy==1.18.1
+scikit-learn==1.9.1
+lightgbm==4.7.0
+joblib==1.6.0
+shap==0.54.1

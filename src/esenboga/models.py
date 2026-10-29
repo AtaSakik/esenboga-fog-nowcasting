@@ -6,9 +6,7 @@ from dataclasses import dataclass, field
 
 import lightgbm as lgb
 import numpy as np
-import optuna
 import pandas as pd
-import xgboost as xgb
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.impute import SimpleImputer
 from sklearn.isotonic import IsotonicRegression
@@ -21,7 +19,8 @@ from .config import RANDOM_STATE
 from .metrics import best_threshold, brier
 
 warnings.filterwarnings("ignore", category=UserWarning)
-optuna.logging.set_verbosity(optuna.logging.WARNING)
+# xgboost and optuna are imported lazily: the operational nowcaster only needs LightGBM, which
+# keeps the serverless (GitHub Actions) environment small.
 
 MODEL_NAMES = {"lr": "Logistic Regression", "rf": "Random Forest", "xgb": "XGBoost",
                "lgbm": "LightGBM", "gru": "GRU", "lstm": "LSTM"}
@@ -151,6 +150,8 @@ def _xgb_params(trial: optuna.Trial | None, fixed: dict | None = None) -> dict:
 
 
 def fit_xgb(Xtr, ytr, Xva, yva, params: dict, scale_pos_weight: float = 1.0, device="cuda"):
+    import xgboost as xgb
+
     m = xgb.XGBClassifier(n_estimators=4000, objective="binary:logistic", tree_method="hist",
                           device=device, eval_metric="aucpr", early_stopping_rounds=150,
                           random_state=RANDOM_STATE, scale_pos_weight=scale_pos_weight,
@@ -161,6 +162,10 @@ def fit_xgb(Xtr, ytr, Xva, yva, params: dict, scale_pos_weight: float = 1.0, dev
 
 def tune_boosting(kind: str, Xtr, ytr, Xva, yva, n_trials: int = 30, seed: int = RANDOM_STATE):
     """Optuna TPE search maximising validation average precision (PR-AUC)."""
+    import optuna
+
+    optuna.logging.set_verbosity(optuna.logging.WARNING)
+
     def objective(trial):
         if kind == "lgbm":
             m, it = fit_lgbm(Xtr, ytr, Xva, yva, _lgbm_params(trial))
