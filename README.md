@@ -80,6 +80,7 @@ Individual steps: `python scripts/01_prepare_data.py`, `python -m pytest tests`,
 uvicorn app.server:app --port 8000        # then open http://localhost:8000  (?lang=en for English)
 python app/live_log.py --loop             # optional: stand-alone live logger (every 10 min)
 python app/live_log.py --summary          # real-time verification of the logged forecasts
+pwsh ./app/register_task.ps1              # Windows: run the logger every 30 min via Task Scheduler
 ```
 
 The application downloads the latest METARs from the NOAA Aviation Weather Center (IEM as fallback),

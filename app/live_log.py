@@ -154,7 +154,13 @@ def main() -> None:
     ap.add_argument("--every", type=int, default=600)
     ap.add_argument("--backfill", type=int, default=0, help="replay the last N hours")
     ap.add_argument("--summary", action="store_true")
+    ap.add_argument("--logfile", default=None,
+                    help="append each cycle's outcome to this file (for scheduled, windowless runs)")
     args = ap.parse_args()
+    if args.logfile:
+        # pythonw.exe has no console: send the cycle reports to a file instead
+        sys.stdout = sys.stderr = open(args.logfile, "a", encoding="utf-8", buffering=1)
+        print(f"--- {datetime.now(timezone.utc).isoformat(timespec='seconds')} start", flush=True)
     log = LiveLog()
     if args.summary:
         print(json.dumps(log.summary(), indent=2))
