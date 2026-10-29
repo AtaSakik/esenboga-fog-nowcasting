@@ -64,12 +64,16 @@ class LiveLog:
         """Fill observed outcomes for predictions whose valid time is on the grid."""
         state = grid[["vis_m", "rvr_min_m"]].dropna(subset=["vis_m"])
         state = state.assign(rvr_eff=rvr_effective(state["vis_m"], state["rvr_min_m"]))
+        if state.empty:
+            return 0
         lookup = {t.isoformat(): (v, r) for t, v, r in
                   zip(state.index, state["vis_m"], state["rvr_eff"])}
         n = 0
         with self._con() as c:
+            # only valid times inside the fetched window can be verified (ISO strings sort in time)
             pending = c.execute("SELECT issue_time, horizon, target, valid_time FROM predictions"
-                                " WHERE observed IS NULL").fetchall()
+                                " WHERE observed IS NULL AND valid_time BETWEEN ? AND ?",
+                                (state.index[0].isoformat(), state.index[-1].isoformat())).fetchall()
             for it, h, tgt, vt in pending:
                 if vt not in lookup:
                     continue
@@ -92,9 +96,22 @@ class LiveLog:
         if len(df):
             for col in ("issue_time", "valid_time"):
                 df[col] = pd.to_datetime(df[col], utc=True)
-            if hours:
+            if hours is not None:
                 df = df[df["issue_time"] >= df["issue_time"].max() - pd.Timedelta(hours=hours)]
         return df
+
+    def forecasts_json(self, hours: float = 72.0, horizon: int = 3) -> list[dict]:
+        """Fog forecasts of one lead time with their outcomes (the dashboard's api/log)."""
+        df = self.frame(hours)
+        if df.empty:
+            return []
+        df = df[(df["target"] == "fog") & (df["horizon"] == horizon)].sort_values("valid_time")
+        return [{"valid_time": v.isoformat(), "issue_time": i.isoformat(), "p": p, "thr": th,
+                 "observed": None if pd.isna(o) else int(o), "obs_vis": None if pd.isna(ov) else ov,
+                 "mode": m}
+                for v, i, p, th, o, ov, m in zip(df["valid_time"], df["issue_time"], df["prob"],
+                                                 df["threshold"], df["observed"], df["obs_vis"],
+                                                 df["mode"])]
 
     def summary(self) -> list[dict]:
         df = self.frame()
@@ -119,17 +136,25 @@ class LiveLog:
         return out
 
 
-def cycle(nc, log: LiveLog) -> dict:
-    """One operational cycle: fetch, predict, log, verify."""
-    from esenboga.inference import fetch_reports
+def run_cycle(nc, log: LiveLog) -> tuple[dict, int, int]:
+    """One operational cycle shared by the FastAPI server, the static publisher and the CLI:
+    fetch, forecast (with explanations), log and verify. Returns (nowcast, added, verified)."""
+    from esenboga.inference import fetch_reports, run_nowcast
 
     reports, source = fetch_reports()
-    grid, base, _ = nc.features_from_reports(reports)
-    t = base.index[grid["vis_m"].notna().to_numpy()][-1]
-    pred = nc.predict_at(base, t, explain=False)
-    added = log.record(t, pred, mode="live")
-    verified = log.verify(grid)
-    return {"issue_time": t.isoformat(), "source": source, "added": added, "verified": verified}
+    prepared = nc.features_from_reports(reports)
+    res = run_nowcast(nc, source=source, prepared=prepared)
+    added = log.record(pd.Timestamp(res["issue_time"]), {"fog": res["fog"], "rvr": res["rvr"]},
+                       mode="live")
+    verified = log.verify(prepared[0])
+    return res, added, verified
+
+
+def cycle(nc, log: LiveLog) -> dict:
+    """CLI cycle: the shared cycle, reported as one line of JSON."""
+    res, added, verified = run_cycle(nc, log)
+    return {"issue_time": res["issue_time"], "source": res["source"], "alert": res["alert"],
+            "added": added, "verified": verified}
 
 
 def backfill(nc, log: LiveLog, hours: int = 72) -> int:

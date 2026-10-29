@@ -3,77 +3,136 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>LTAC Sis Erken Uyarı</title>
+  <title>Esenboğa Sis Tahmini</title>
+  <meta name="description" content="Ankara Esenboğa Havalimanı için önümüzdeki 6 saatin sis tahmini. Her yarım saatte bir güncellenir.">
+  <meta property="og:title" content="Esenboğa Sis Tahmini">
+  <meta property="og:description" content="Ankara Esenboğa Havalimanı için önümüzdeki 6 saatin sis tahmini.">
+  <meta name="theme-color" content="#14243a">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='1' y='1' width='30' height='30' rx='4' fill='%23000' stroke='%23f2c200' stroke-width='2'/%3E%3Ccircle cx='16' cy='11' r='3' fill='%23f2c200'/%3E%3Ccircle cx='16' cy='21' r='4' fill='%23f2c200'/%3E%3C/svg%3E">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="static/style.css?v=4">
+  <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@500;600&family=IBM+Plex+Mono&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="static/style.css?v=5">
 </head>
 <body>
-  <header class="top">
-    <div class="sign" aria-label="LTAC">LTAC</div>
-    <div class="title">
-      <h1 data-i18n="title">Esenboğa düşük görüş erken uyarı</h1>
-      <p class="sub"><span data-i18n="issued">Son rasat</span> <time id="issued">–</time> · <span id="source"></span></p>
-    </div>
-    <div class="lang" role="group" aria-label="Dil / Language">
-      <button type="button" data-lang="tr" aria-pressed="true">TR</button>
-      <button type="button" data-lang="en" aria-pressed="false">EN</button>
-    </div>
-  </header>
+  <a class="skip" href="#main" data-i18n="skip">İçeriğe geç</a>
 
-  <section id="alert" class="alert" aria-live="polite">
-    <strong id="alert-title">–</strong>
-    <span id="alert-text"></span>
-  </section>
-
-  <main>
-    <section class="hero" aria-labelledby="hero-h">
-      <h2 id="hero-h" data-i18n="heroTitle">Önümüzdeki 6 saatte sis olasılığı</h2>
-      <p class="hint" data-i18n="heroHint">Sütunlar kalibre edilmiş olasılığı gösterir; sis yükseldikçe yaklaşma ışıkları kaybolur. Bir sütuna tıklayınca etkili faktörler görünür.</p>
-      <div id="lights" class="lights" role="list"></div>
-    </section>
-
-    <div class="grid2">
-      <section class="panel" aria-labelledby="now-h">
-        <h2 id="now-h" data-i18n="nowTitle">Şu an Esenboğa'da</h2>
-        <dl id="now" class="conds"></dl>
-        <pre id="raw" class="raw" aria-label="METAR"></pre>
-      </section>
-      <section class="panel" aria-labelledby="ils-h">
-        <h2 id="ils-h" data-i18n="ilsTitle">ILS kategorisi görünümü (RVR)</h2>
-        <p class="hint" data-i18n="ilsHint">CAT I: RVR ≥ 550 m · CAT II: 350–550 m · CAT III: RVR &lt; 350 m</p>
-        <div id="ils" class="ils"></div>
-      </section>
-    </div>
-
-    <section class="panel" aria-labelledby="why-h">
-      <h2 id="why-h"><span data-i18n="whyTitle">Tahmini belirleyen faktörler</span> <span id="why-h-sel" class="sel"></span></h2>
-      <p class="hint" data-i18n="whyHint">SHAP katkıları: sağa uzanan çubuklar sis riskini artırır, sola uzananlar azaltır.</p>
-      <div id="why" class="why"></div>
-    </section>
-
-    <section class="panel" aria-labelledby="hist-h">
-      <h2 id="hist-h" data-i18n="histTitle">Son 48 saat: gözlem ve 3 saat önceden verilen tahmin</h2>
-      <div id="hist" class="hist"></div>
-      <div class="legend">
-        <span><i class="sw vis"></i><span data-i18n="lgVis">Görüş</span></span>
-        <span><i class="sw rvr"></i>RVR</span>
-        <span><i class="sw prob"></i><span data-i18n="lgProb">3 sa önceki sis olasılığı</span></span>
-        <span><i class="sw thr"></i>1000 m</span>
+  <div class="wrap">
+    <header class="top">
+      <span class="sign" aria-hidden="true">LTAC</span>
+      <div class="brand">
+        <p class="name" data-i18n="brand">Esenboğa Sis Tahmini</p>
+        <p class="sub" data-i18n="brandSub">Ankara Esenboğa Havalimanı, önümüzdeki 6 saat</p>
       </div>
-    </section>
+      <div class="lang" role="group" aria-label="Dil / Language">
+        <button type="button" data-lang="tr" lang="tr" aria-pressed="true">TR</button>
+        <button type="button" data-lang="en" lang="en" aria-pressed="false">EN</button>
+      </div>
+    </header>
 
-    <section class="panel" aria-labelledby="ver-h">
-      <h2 id="ver-h" data-i18n="verTitle">Gerçek zamanlı doğrulama</h2>
-      <p class="hint" data-i18n="verHint">Her tahmin kaydedilir ve geçerlilik saati gelince gözlemle karşılaştırılır. "Canlı" uygulamanın çalıştığı dönemi, "yeniden oynatma" ilk açılışta son 72 saatin aynı kodla yeniden üretilmesini gösterir.</p>
-      <div class="table-wrap"><table id="ver"></table></div>
-    </section>
-  </main>
+    <main id="main">
+      <section class="hero" id="hero" data-level="loading">
+        <figure class="scene">
+          <div id="scene"></div>
+          <figcaption id="scene-cap"></figcaption>
+        </figure>
+        <div class="status" aria-live="polite">
+          <p class="level"><span class="lamp" aria-hidden="true"></span><span id="level-word"></span></p>
+          <h1 id="headline">Tahmin yükleniyor…</h1>
+          <p class="summary" id="summary"></p>
+          <p class="stamp" id="stamp"></p>
+        </div>
+        <noscript><p class="summary">Bu sayfa JavaScript ile çalışır. / This page needs JavaScript.</p></noscript>
+      </section>
 
-  <footer>
-    <p data-i18n="foot">Araştırma prototipi — operasyonel kullanım için değildir. Resmî tahminler için MGM ve TAF/TREND esas alınmalıdır. Model: kalibre edilmiş LightGBM; eğitim 2005–2019, doğrulama 2019–2022, test 2022–2026 LTAC METAR/SPECI.</p>
-  </footer>
-  <script src="static/app.js?v=4"></script>
+      <section class="sec" aria-labelledby="hours-h">
+        <h2 id="hours-h" data-i18n="hoursTitle">Saat saat sis olasılığı</h2>
+        <p class="lead" data-i18n="hoursLead">Her satır, o saatte havalimanında sis olma olasılığını gösterir.</p>
+        <ol class="hours" id="hours"></ol>
+        <p class="note" data-i18n="hoursHint">Bir satıra dokunduğunuzda, aşağıda o saatin tahmininin nedenleri açıklanır.</p>
+      </section>
+
+      <section class="sec" aria-labelledby="why-h">
+        <h2 id="why-h">Bu tahmin neden böyle?</h2>
+        <p class="lead" data-i18n="whyLead">Model, onlarca ölçümü birlikte değerlendirir.</p>
+        <div class="why">
+          <div class="up">
+            <h3 data-i18n="whyUp">Sis olasılığını artıranlar</h3>
+            <ul id="why-up"></ul>
+          </div>
+          <div class="down">
+            <h3 data-i18n="whyDown">Sis olasılığını azaltanlar</h3>
+            <ul id="why-down"></ul>
+          </div>
+        </div>
+        <details class="more">
+          <summary data-i18n="whyTech">Teknik ayrıntı: modelin en etkili 8 değişkeni</summary>
+          <div class="table-wrap"><table id="shap-table"></table></div>
+          <p class="note" data-i18n="whyTechNote">SHAP katkıları.</p>
+        </details>
+      </section>
+
+      <section class="sec" aria-labelledby="land-h">
+        <h2 id="land-h" data-i18n="landTitle">Uçuşlara olası etkisi</h2>
+        <p class="lead" data-i18n="landLead">Sis yoğunlaştıkça pilotun pisti görebildiği mesafe kısalır.</p>
+        <p class="verdict" id="land-summary"></p>
+        <div class="land" id="land"></div>
+        <ul class="cats" id="cats"></ul>
+      </section>
+
+      <section class="sec" aria-labelledby="now-h">
+        <h2 id="now-h" data-i18n="nowTitle">Şu an havalimanında</h2>
+        <p class="lead" id="now-lead"></p>
+        <dl class="facts" id="facts"></dl>
+        <p class="note" id="spread-note"></p>
+        <details class="more">
+          <summary data-i18n="rawSummary">Ham hava raporu (METAR)</summary>
+          <pre class="raw" id="raw"></pre>
+          <p class="note" data-i18n="rawNote">Yukarıdaki değerler bu rapordan çözüldü.</p>
+        </details>
+      </section>
+
+      <section class="sec" aria-labelledby="hist-h">
+        <h2 id="hist-h" data-i18n="histTitle">Son 48 saat</h2>
+        <p class="lead" data-i18n="histLead">Ölçülen görüş mesafesi ve 3 saat önceden verilen sis olasılığı.</p>
+        <div class="chart" id="chart"></div>
+        <p class="legend" id="legend"></p>
+      </section>
+
+      <section class="sec" aria-labelledby="ver-h">
+        <h2 id="ver-h" data-i18n="verTitle">Tahminler tuttu mu?</h2>
+        <p class="lead" data-i18n="verLead">Her tahmin kaydedilir ve saati gelince gerçekleşen havayla karşılaştırılır.</p>
+        <p class="verdict" id="ver-live"></p>
+        <p data-i18n="verTest">Model, eğitiminde hiç kullanılmamış verilerle de sınandı.</p>
+        <details class="more">
+          <summary data-i18n="verTech">Ayrıntılı doğrulama tablosu</summary>
+          <div class="table-wrap"><table id="ver"></table></div>
+          <p class="note" data-i18n="verTechNote">Ölçütlerin açıklaması.</p>
+        </details>
+      </section>
+
+      <section class="sec" aria-labelledby="about-h">
+        <h2 id="about-h" data-i18n="aboutTitle">Bu site nasıl çalışıyor?</h2>
+        <ol class="steps">
+          <li data-i18n="step1">Hava raporları otomatik olarak alınır.</li>
+          <li data-i18n="step2">Yapay zekâ modeli sis olasılığını hesaplar.</li>
+          <li data-i18n="step3">Her tahmin kaydedilir ve gerçekleşen havayla karşılaştırılır.</li>
+        </ol>
+        <p data-i18n="climate">Esenboğa'da yılda ortalama 90 saat kadar sis görülür.</p>
+        <p class="disclaimer" data-i18n="disclaimer">Bu site bir öğrenci araştırma projesidir; resmî tahmin değildir.</p>
+        <p><a href="https://github.com/AtaSakik/esenboga-fog-nowcasting" data-i18n="linkCode">Kaynak kodu, verileri ve makaleyi GitHub'da inceleyin</a></p>
+      </section>
+
+      <section class="sec" aria-labelledby="terms-h">
+        <h2 id="terms-h" data-i18n="termsTitle">Terimler</h2>
+        <dl class="terms" id="terms"></dl>
+      </section>
+    </main>
+
+    <footer>
+      <p data-i18n="foot">Veri kaynakları: NOAA Aviation Weather Center ve Iowa Environmental Mesonet.</p>
+    </footer>
+  </div>
+  <script src="static/app.js?v=5"></script>
 </body>
 </html>

@@ -601,6 +601,7 @@ class Paper:
         cp = self.doc.core_properties
         cp.title = self.meta["title"]
         cp.author = "Ata Sakik"
+        cp.last_modified_by = "Ata Sakik"
         cp.subject = "YMH453 Machine Learning term project"
         cp.keywords = self.meta["keywords"]
         self.doc.save(path)

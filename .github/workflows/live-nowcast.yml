@@ -32,10 +32,18 @@ jobs:
       - name: Restore the live prediction database
         run: |
           mkdir -p live
-          if git fetch --depth 1 origin live-data 2>/dev/null; then
+          # exit code 2 = the branch does not exist yet (first run); any other failure must stop
+          # the job, otherwise the stale seed database would be force-pushed over the live record
+          status=0
+          git ls-remote --exit-code --heads origin live-data > /dev/null || status=$?
+          if [ "$status" -eq 0 ]; then
+            git fetch --depth 1 origin live-data
             git show FETCH_HEAD:live_predictions.sqlite > live/live_predictions.sqlite
-          else
+          elif [ "$status" -eq 2 ]; then
             cp logs/live_predictions.sqlite live/live_predictions.sqlite
+          else
+            echo "cannot read the live-data branch (git exit code $status)" >&2
+            exit 1
           fi
 
       - uses: actions/setup-python@v5

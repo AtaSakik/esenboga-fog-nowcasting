@@ -20,6 +20,7 @@ import pandas as pd
 from .config import MODELS, STATION, VIS_FOG_M
 from .dataset import decode, quality_control
 from .features import build_grid, feature_matrix, make_features
+from .labels import FACTOR_OF
 from .metar import parse_metar
 from .metrics import rvr_class_probs
 
@@ -115,10 +116,12 @@ class Nowcaster:
 
     def predict_at(self, base: pd.DataFrame, t: pd.Timestamp, explain: bool = True,
                    top_k: int = 8) -> dict:
-        out = {"fog": {}, "rvr": {}, "shap": {}}
+        out = {"fog": {}, "rvr": {}, "shap": {}, "factors": {}}
+        row = base.loc[[t]]
+        Xs = {h: feature_matrix(None, h, base=row) for h in {h for (_, h) in self.models}}
         for h in self.fog_horizons:
             fm = self.models[("fog", h)]
-            X = feature_matrix(None, h, base=base.loc[[t]])
+            X = Xs[h]
             p = float(fm.predict(X)[0])
             out["fog"][h] = {"p": p, "threshold": fm.threshold, "warn": p >= fm.threshold}
             if explain:
@@ -128,8 +131,14 @@ class Nowcaster:
                 out["shap"][h] = [{"feature": fm.features[i], "value": float(sv[i]),
                                    "x": None if pd.isna(X[fm.features[i]].iloc[0])
                                    else float(X[fm.features[i]].iloc[0])} for i in order]
+                groups: dict[str, float] = {}
+                for f, v in zip(fm.features, sv):
+                    g = FACTOR_OF.get(f, "report")
+                    groups[g] = groups.get(g, 0.0) + float(v)
+                out["factors"][h] = sorted(({"group": g, "value": v} for g, v in groups.items()),
+                                           key=lambda d: -abs(d["value"]))
         for h in self.rvr_horizons:
-            X = feature_matrix(None, h, base=base.loc[[t]])
+            X = Xs[h]
             p550 = float(self.models[("rvr550", h)].predict(X)[0])
             p350 = float(self.models[("rvr350", h)].predict(X)[0])
             probs = rvr_class_probs(np.array([p550]), np.array([p350]))[0]
@@ -197,6 +206,7 @@ def run_nowcast(nc: Nowcaster, reports: pd.DataFrame | None = None, source: str 
         "station": STATION, "issue_time": t.isoformat(), "source": source,
         "generated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "conditions": cond, "fog": pred["fog"], "rvr": pred["rvr"], "shap": pred["shap"],
+        "factors": pred["factors"],
         "alert": alert_level(pred["fog"], cond["fog_now"]),
         "history": [{"t": i.isoformat(), "vis_m": None if pd.isna(v) else float(v),
                      "rvr_m": None if pd.isna(r) else float(r)}

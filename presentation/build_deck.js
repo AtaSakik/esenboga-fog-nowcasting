@@ -362,10 +362,10 @@ newSection(tr ? "Uygulama ve sonuç" : "Application and conclusion");
        : "Every 10 minutes the app fetches the latest METARs, runs the same pipeline and shows 1–6 h probabilities, the ILS outlook, an alert level and SHAP explanations. Every forecast is logged and verified automatically. Parity test: zero difference in 240 comparisons. July–October 2026 replay: no fog and not a single false alarm.");
   image(s, "app_screenshot.png", 0.6, 1.3, 5.75, 5.58);
   bullets(s, tr ? ["Her 10 dakikada canlı METAR (NOAA AWC, yedek IEM)", "Eğitimle birebir aynı işlem hattı: eşdeğerlik testinde fark 0,0",
-                   "Kademeli uyarı: yeşil / sarı (izleme) / turuncu / kırmızı", "Her tahmin için SHAP tabanlı etkili faktörler",
+                   "Kademeli uyarı: yeşil / sarı (izleme) / turuncu / kırmızı", "SHAP tabanlı etkenler, herkesin anlayacağı sade Türkçeyle",
                    "SQLite kaydı ve otomatik gerçek zamanlı doğrulama", "Temmuz–Ekim 2026: 5 700+ tahmin, 0 yanlış alarm", "Canlı sayfa (GitHub Actions, her 30 dk): atasakik.github.io/esenboga-fog-nowcasting"]
                 : ["Live METARs every 10 min (NOAA AWC, IEM fallback)", "Identical pipeline to training: parity difference 0.0",
-                   "Tiered alerts: green / yellow (watch) / orange / red", "SHAP-based driving factors for every forecast",
+                   "Tiered alerts: green / yellow (watch) / orange / red", "SHAP-based driving factors in plain language",
                    "SQLite log with automatic real-time verification", "July–October 2026: 5,700+ forecasts, 0 false alarms", "Live page (GitHub Actions, every 30 min): atasakik.github.io/esenboga-fog-nowcasting"],
     6.75, 1.45, 5.95, 5.3, 17);
 }

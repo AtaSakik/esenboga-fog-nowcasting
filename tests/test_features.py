@@ -49,3 +49,16 @@ def test_targets_come_from_the_future(reports):
         fog.index[:-2]), check_names=False)
     # an observation can only fill the slot (t-29 min, t]: target never re-uses the obs at t
     assert (grid["obs_age_min"].dropna() < 30).all()
+
+
+def test_plain_factors_cover_every_feature():
+    """Every model feature belongs to exactly one plain-language factor of the dashboard."""
+    import joblib
+
+    from esenboga.config import MODELS
+    from esenboga.labels import FACTOR_OF, FEATURE_LABELS, PLAIN_FACTORS
+
+    assert sum(len(v) for v in PLAIN_FACTORS.values()) == len(FACTOR_OF)   # no duplicates
+    assert set(FACTOR_OF) == set(FEATURE_LABELS)
+    for f in sorted(MODELS.glob("tab_lgbm_fog_*h.joblib")):
+        assert set(joblib.load(f).features) <= set(FACTOR_OF), f.name

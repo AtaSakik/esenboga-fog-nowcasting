@@ -19,22 +19,9 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 sys.path.insert(0, str(ROOT / "app"))
-from esenboga.inference import Nowcaster, fetch_reports, run_nowcast  # noqa: E402
-from esenboga.labels import FEATURE_LABELS  # noqa: E402
-from live_log import LiveLog  # noqa: E402
-
-
-def log_json(log: LiveLog, hours: float = 72.0, horizon: int = 3) -> list[dict]:
-    """Same structure as the /api/log endpoint of app/server.py."""
-    df = log.frame(hours)
-    if df.empty:
-        return []
-    df = df[(df["target"] == "fog") & (df["horizon"] == horizon)].sort_values("valid_time")
-    return [{"valid_time": v.isoformat(), "issue_time": i.isoformat(), "p": p, "thr": th,
-             "observed": None if o != o else int(o), "obs_vis": None if ov != ov else ov, "mode": m}
-            for v, i, p, th, o, ov, m in zip(df["valid_time"], df["issue_time"], df["prob"],
-                                             df["threshold"], df["observed"], df["obs_vis"],
-                                             df["mode"])]
+from esenboga.inference import Nowcaster  # noqa: E402
+from esenboga.labels import LABELS_JSON  # noqa: E402
+from live_log import LiveLog, run_cycle  # noqa: E402
 
 
 def main() -> None:
@@ -44,14 +31,7 @@ def main() -> None:
     args = ap.parse_args()
 
     log = LiveLog(Path(args.db))
-    nc = Nowcaster()
-    reports, source = fetch_reports()
-    prepared = nc.features_from_reports(reports)
-    res = run_nowcast(nc, source=source, prepared=prepared)
-    grid = prepared[0]
-    t = grid.index[grid["vis_m"].notna().to_numpy()][-1]
-    added = log.record(t, {"fog": res["fog"], "rvr": res["rvr"]}, mode="live")
-    verified = log.verify(grid)
+    res, added, verified = run_cycle(Nowcaster(), log)
 
     out = Path(args.out)
     if out.exists():
@@ -62,13 +42,13 @@ def main() -> None:
     api = out / "api"
     api.mkdir(parents=True)
     res["error"] = None
-    res["labels"] = {k: {"en": v[0], "tr": v[1]} for k, v in FEATURE_LABELS.items()}
+    res["labels"] = LABELS_JSON
     (api / "nowcast").write_text(json.dumps(res), encoding="utf-8")
-    (api / "log").write_text(json.dumps(log_json(log)), encoding="utf-8")
+    (api / "log").write_text(json.dumps(log.forecasts_json()), encoding="utf-8")
     (api / "verification").write_text(json.dumps(log.summary()), encoding="utf-8")
     print(json.dumps({"published": datetime.now(timezone.utc).isoformat(timespec="seconds"),
-                      "issue_time": res["issue_time"], "source": source, "alert": res["alert"],
-                      "added": added, "verified": verified}))
+                      "issue_time": res["issue_time"], "source": res["source"],
+                      "alert": res["alert"], "added": added, "verified": verified}))
 
 
 if __name__ == "__main__":

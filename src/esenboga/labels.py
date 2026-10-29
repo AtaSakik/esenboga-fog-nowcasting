@@ -109,6 +109,34 @@ FEATURE_GROUPS = {
 }
 
 
+# Plain-language factors of the public dashboard. TreeSHAP values are additive, so the sum over
+# a factor's features is that factor's exact contribution to the log-odds of the forecast.
+PLAIN_FACTORS: dict[str, list[str]] = {
+    "humidity": ["rh_pct", "dewpt_c", "dpd_c", "drh_1h", "drh_3h", "dTd_1h", "dTd_3h", "dTd_6h",
+                 "ddpd_1h", "ddpd_3h", "ddpd_6h", "dpd_min_6h", "rh_max_6h"],
+    "visibility": ["vis_m", "log_vis", "vis_min_m", "rvr_eff_m", "fog_now", "dlogvis_1h",
+                   "dlogvis_3h", "dlogvis_6h", "vis_min_3h", "vis_min_6h", "wx_fg",
+                   "wx_shallow_fg", "wx_vcfg", "wx_fzfg", "wx_br", "wx_hz"],
+    "temperature": ["temp_c", "dT_1h", "dT_3h", "dT_6h", "T_minus_max12h"],
+    "wind": ["wind_speed_kt", "wind_u", "wind_v", "calm", "gust_excess_kt", "dwind_1h",
+             "dwind_3h", "wind_mean_3h"],
+    "clouds": ["log_ceiling_ft", "log_lowest_cloud_ft", "max_cover_octas", "low_cloud",
+               "vv_reported", "cavok", "dlogceil_3h"],
+    "precipitation": ["wx_dz", "wx_ra", "wx_sn", "wx_precip", "recent_precip", "precip_frac_12h",
+                      "snow_frac_72h"],
+    "recent_fog": ["fog_frac_6h", "fog_frac_24h", "br_frac_6h", "h_since_fog"],
+    "time_of_day": ["hour_sin", "hour_cos", "solar_elev", "is_night", "h_since_sunset",
+                    "h_to_sunrise", "vt_solar_elev", "vt_is_night", "vt_h_to_sunrise",
+                    "vt_h_since_sunrise"],
+    "season": ["doy_sin", "doy_cos", "night_len_h"],
+    "pressure": ["qnh_hpa", "dqnh_3h", "dqnh_12h"],
+    "report": ["obs_age_min"],
+}
+FACTOR_OF: dict[str, str] = {f: g for g, feats in PLAIN_FACTORS.items() for f in feats}
+# Feature names for the web API: {feature: {"en": ..., "tr": ...}}
+LABELS_JSON: dict[str, dict[str, str]] = {k: {"en": en, "tr": tr} for k, (en, tr) in FEATURE_LABELS.items()}
+
+
 def label(name: str, lang: str = "en") -> str:
     en, tr = FEATURE_LABELS.get(name, (name, name))
     return tr if lang == "tr" else en

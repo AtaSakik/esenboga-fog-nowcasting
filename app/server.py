@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import asyncio
 import sys
+import threading
 from contextlib import asynccontextmanager
 from datetime import datetime, timezone
 from pathlib import Path
@@ -18,28 +19,32 @@ from fastapi.staticfiles import StaticFiles
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 sys.path.insert(0, str(ROOT / "app"))
-from esenboga.inference import Nowcaster, fetch_reports, run_nowcast  # noqa: E402
-from esenboga.labels import FEATURE_LABELS  # noqa: E402
-from live_log import LiveLog, backfill  # noqa: E402
+from esenboga.inference import Nowcaster  # noqa: E402
+from esenboga.labels import LABELS_JSON  # noqa: E402
+from live_log import LiveLog, backfill, run_cycle  # noqa: E402
 
 STATIC = ROOT / "app" / "static"
 CACHE_S = 300
 LOOP_S = 600
+MIN_REFRESH_S = 60          # requests arriving together share one upstream fetch
 STATE: dict = {"result": None, "fetched": None, "error": None}
+REFRESH_LOCK = threading.Lock()
+
+
+def _age_s() -> float | None:
+    return None if STATE["fetched"] is None else (datetime.now(timezone.utc) - STATE["fetched"]).total_seconds()
 
 
 def refresh() -> dict:
-    nc: Nowcaster = STATE["nc"]
-    reports, source = fetch_reports()
-    prepared = nc.features_from_reports(reports)
-    res = run_nowcast(nc, source=source, prepared=prepared)
-    log: LiveLog = STATE["log"]
-    grid = prepared[0]
-    t = grid.index[grid["vis_m"].notna().to_numpy()][-1]
-    log.record(t, {"fog": res["fog"], "rvr": res["rvr"]}, mode="live")
-    log.verify(grid)
-    STATE.update(result=res, fetched=datetime.now(timezone.utc), error=None)
-    return res
+    """Run one live cycle; concurrent callers wait for the cycle in progress instead of
+    starting their own (one fetch, one set of SQLite writes)."""
+    with REFRESH_LOCK:
+        age = _age_s()
+        if STATE["result"] is not None and age is not None and age < MIN_REFRESH_S:
+            return STATE["result"]
+        res, _, _ = run_cycle(STATE["nc"], STATE["log"])
+        STATE.update(result=res, fetched=datetime.now(timezone.utc), error=None)
+        return res
 
 
 async def loop() -> None:
@@ -76,7 +81,7 @@ def index():
 
 @app.get("/api/nowcast")
 async def nowcast(refresh_now: bool = Query(False, alias="refresh")):
-    age = None if STATE["fetched"] is None else (datetime.now(timezone.utc) - STATE["fetched"]).total_seconds()
+    age = _age_s()
     if refresh_now or STATE["result"] is None or age is None or age > CACHE_S:
         try:
             await asyncio.to_thread(refresh)
@@ -86,22 +91,13 @@ async def nowcast(refresh_now: bool = Query(False, alias="refresh")):
                 return JSONResponse({"error": STATE["error"]}, status_code=503)
     res = dict(STATE["result"])
     res["error"] = STATE["error"]
-    res["labels"] = {k: {"en": v[0], "tr": v[1]} for k, v in FEATURE_LABELS.items()}
+    res["labels"] = LABELS_JSON
     return res
 
 
 @app.get("/api/log")
 def prediction_log(hours: float = 72.0, horizon: int = 3):
-    df = STATE["log"].frame(hours)
-    if df.empty:
-        return []
-    df = df[(df["target"] == "fog") & (df["horizon"] == horizon)].sort_values("valid_time")
-    return [{"valid_time": v.isoformat(), "issue_time": i.isoformat(), "p": p, "thr": th,
-             "observed": None if o != o else int(o), "obs_vis": None if ov != ov else ov,
-             "mode": m}
-            for v, i, p, th, o, ov, m in zip(df["valid_time"], df["issue_time"], df["prob"],
-                                             df["threshold"], df["observed"], df["obs_vis"],
-                                             df["mode"])]
+    return STATE["log"].forecasts_json(hours, horizon)
 
 
 @app.get("/api/verification")

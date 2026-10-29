@@ -105,6 +105,9 @@ def quality_control(dec: pd.DataFrame) -> tuple[pd.DataFrame, dict]:
     dp_bad = d["dewpt_c"] > d["temp_c"] + 0.5
     log["dewpoint_above_temperature"] = int(dp_bad.sum())
     d.loc[dp_bad, "dewpt_c"] = np.nan
+    # The spike test compares each report with its neighbours on both sides. Offline this uses
+    # the following report (18 of 385 018 values were removed in 2005-2026); in live operation
+    # the newest report has no successor and is therefore never flagged.
     gap_prev = d["obs_time"].diff().dt.total_seconds() / 3600
     gap_next = -d["obs_time"].diff(-1).dt.total_seconds() / 3600
     near = (gap_prev <= 2) & (gap_next <= 2)

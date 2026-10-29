@@ -1,9 +1,10 @@
 """Grid construction, feature engineering and target definition.
 
 The same functions are used offline (20-year archive) and online (web application): the app
-feeds the last ~30 h of decoded METARs through :func:`build_grid` and :func:`make_features`
-and reads the last row. Every feature at grid time ``t`` depends only on reports issued at or
-before ``t`` (verified by ``tests/test_leakage.py``).
+feeds the last 120 h of decoded METARs (``inference.HISTORY_H``; the memory features reach
+back up to 96 h) through :func:`build_grid` and :func:`make_features` and reads the last row.
+Every feature at grid time ``t`` depends only on reports issued at or before ``t`` (verified
+by ``tests/test_features.py::test_no_lookahead_leakage``).
 """
 from __future__ import annotations
 
