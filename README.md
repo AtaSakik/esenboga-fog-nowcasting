@@ -17,6 +17,8 @@ English and Turkish, a presentation and a live web-based early-warning applicati
 > resmî METAR TREND tahminini CSI'da 0,105 farkla aşmaktadır. Makalenin Türkçe sürümü
 > [`report/Esenboga_DusukGorus_Tahmini_IEEE_TR.pdf`](report/Esenboga_DusukGorus_Tahmini_IEEE_TR.pdf),
 > sunum ise [`presentation/Esenboga_Sunum_TR.pptx`](presentation/Esenboga_Sunum_TR.pptx) dosyasındadır.
+> Canlı erken uyarı sayfası, teknik bilgisi olmayan ziyaretçiler için sade Türkçeyle hazırlanmıştır:
+> **https://atasakik.github.io/esenboga-fog-nowcasting/**
 
 ## Key results (test seasons 2022/23–2025/26, never used for training or tuning)
 
@@ -99,8 +101,11 @@ pwsh ./app/register_task.ps1              # Windows: run the logger every 30 min
 ```
 
 The application downloads the latest METARs from the NOAA Aviation Weather Center (IEM as fallback),
-runs exactly the same decoding, quality-control and feature code as the study, and shows calibrated
-fog probabilities for 1–6 h, an ILS-category outlook, a tiered alert and SHAP-based driving factors.
+runs exactly the same decoding, quality-control and feature code as the study, and shows, in plain
+Turkish (English on request) for non-specialist visitors, a one-sentence status, calibrated fog
+probabilities for 1–6 h against their warning thresholds, an ILS-category outlook and the driving
+factors of each forecast (TreeSHAP contributions summed into ten plain-language groups such as
+humidity, wind and time of day).
 Every forecast is stored and automatically verified when its valid time has passed. A parity test
 (`scripts/08_operational_replay.py`) confirms that live and offline forecasts are identical.
 
