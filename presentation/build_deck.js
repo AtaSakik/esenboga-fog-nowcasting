@@ -363,10 +363,10 @@ newSection(tr ? "Uygulama ve sonuç" : "Application and conclusion");
   image(s, "app_screenshot.png", 0.6, 1.3, 5.75, 5.58);
   bullets(s, tr ? ["Her 10 dakikada canlı METAR (NOAA AWC, yedek IEM)", "Eğitimle birebir aynı işlem hattı: eşdeğerlik testinde fark 0,0",
                    "Kademeli uyarı: yeşil / sarı (izleme) / turuncu / kırmızı", "Her tahmin için SHAP tabanlı etkili faktörler",
-                   "SQLite kaydı ve otomatik gerçek zamanlı doğrulama", "Temmuz–Ekim 2026: 5 700+ tahmin, 0 yanlış alarm", "Açık kaynak: FastAPI + saf HTML/CSS/JS"]
+                   "SQLite kaydı ve otomatik gerçek zamanlı doğrulama", "Temmuz–Ekim 2026: 5 700+ tahmin, 0 yanlış alarm", "Canlı sayfa (GitHub Actions, her 30 dk): atasakik.github.io/esenboga-fog-nowcasting"]
                 : ["Live METARs every 10 min (NOAA AWC, IEM fallback)", "Identical pipeline to training: parity difference 0.0",
                    "Tiered alerts: green / yellow (watch) / orange / red", "SHAP-based driving factors for every forecast",
-                   "SQLite log with automatic real-time verification", "July–October 2026: 5,700+ forecasts, 0 false alarms", "Open source: FastAPI + plain HTML/CSS/JS"],
+                   "SQLite log with automatic real-time verification", "July–October 2026: 5,700+ forecasts, 0 false alarms", "Live page (GitHub Actions, every 30 min): atasakik.github.io/esenboga-fog-nowcasting"],
     6.75, 1.45, 5.95, 5.3, 17);
 }
 {

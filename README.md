@@ -74,7 +74,22 @@ Individual steps: `python scripts/01_prepare_data.py`, `python -m pytest tests`,
 `python scripts/06_shap.py`, `python scripts/07_figures.py`, `python scripts/08_operational_replay.py`,
 `python report/build_paper.py` (requires MS Word for the PDF export).
 
-## Run the early-warning application
+## Live dashboard (serverless, free)
+
+**https://atasakik.github.io/esenboga-fog-nowcasting/** — refreshed every 30 minutes by the GitHub
+Actions workflow [`.github/workflows/live-nowcast.yml`](.github/workflows/live-nowcast.yml), which fetches
+the latest LTAC METARs, logs and verifies the calibrated forecasts and republishes the dashboard to
+GitHub Pages. The prediction database is kept on the single-commit branch `live-data`. To analyse the live
+record locally (e.g. at the end of the semester):
+
+```bash
+git fetch origin live-data
+git show origin/live-data:live_predictions.sqlite > logs/live_predictions.sqlite
+python app/live_log.py --summary
+python scripts/08_operational_replay.py   # adds the live rows to the operational table
+```
+
+## Run the early-warning application locally
 
 ```bash
 uvicorn app.server:app --port 8000        # then open http://localhost:8000  (?lang=en for English)
