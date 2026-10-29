@@ -1,0 +1,4 @@
+h,n,fog_observed,taf_prev_fog_fcsts,taf_worst_fog_fcsts,taf_worst_below_5000,lgbm_warnings,lgbm_max_p
+1,1425,0,0,0,112,0,0.026
+3,1422,0,0,0,120,0,0.144
+6,1416,0,0,0,114,0,0.108

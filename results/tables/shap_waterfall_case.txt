@@ -1,0 +1,1 @@
+time=2022-12-17 16:20:00+00:00 p_cal=0.817 threshold=0.33 vis_now=1200.0 dpd=1.0 wind=2.0

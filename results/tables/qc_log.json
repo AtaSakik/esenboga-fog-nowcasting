@@ -1,0 +1,25 @@
+{
+  "reports_in": 385127,
+  "dropped_nil_malformed_or_no_vis": 109,
+  "range_temp_c": 2,
+  "range_dewpt_c": 13,
+  "range_qnh_hpa": 14,
+  "range_wind_speed_kt": 0,
+  "range_vis_m": 0,
+  "range_rvr_min_m": 0,
+  "dewpoint_above_temperature": 0,
+  "spike_temp_c": 5,
+  "spike_dewpt_c": 5,
+  "spike_qnh_hpa": 8,
+  "reports_out": 385018,
+  "by_source": {
+    "IEM": 364028,
+    "OGIMET": 20990
+  },
+  "by_type": {
+    "METAR": 381408,
+    "SPECI": 3610
+  },
+  "grid_slots": 382607,
+  "grid_slots_with_obs": 381420
+}

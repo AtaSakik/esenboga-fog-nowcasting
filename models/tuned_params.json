@@ -1,0 +1,83 @@
+{
+  "xgb_1h": {
+    "learning_rate": 0.032442610411242245,
+    "max_depth": 5,
+    "min_child_weight": 2.0307732073235942,
+    "subsample": 0.6952284400571391,
+    "colsample_bytree": 0.739367854408842,
+    "reg_lambda": 0.44669661201979916,
+    "gamma": 1.8468854033828288
+  },
+  "lgbm_1h": {
+    "learning_rate": 0.02632265696328397,
+    "num_leaves": 17,
+    "min_child_samples": 42,
+    "feature_fraction": 0.7569934221212286,
+    "bagging_fraction": 0.7086748073010815,
+    "lambda_l2": 0.03830314569435561,
+    "min_split_gain": 0.4001528858317369
+  },
+  "xgb_3h": {
+    "learning_rate": 0.035308730803518935,
+    "max_depth": 9,
+    "min_child_weight": 14.766626728510257,
+    "subsample": 0.998205269161795,
+    "colsample_bytree": 0.698137997847344,
+    "reg_lambda": 0.5741948775600718,
+    "gamma": 1.584823004040285
+  },
+  "lgbm_3h": {
+    "learning_rate": 0.025034102152280427,
+    "num_leaves": 27,
+    "min_child_samples": 59,
+    "feature_fraction": 0.6736419905302216,
+    "bagging_fraction": 0.8925879806965068,
+    "lambda_l2": 0.007833642249746978,
+    "min_split_gain": 0.2571172192068058
+  },
+  "xgb_6h": {
+    "learning_rate": 0.0837706172806592,
+    "max_depth": 6,
+    "min_child_weight": 8.062022936312335,
+    "subsample": 0.600749339895257,
+    "colsample_bytree": 0.44637626160562416,
+    "reg_lambda": 27.68616121276098,
+    "gamma": 1.937315062828366
+  },
+  "lgbm_6h": {
+    "learning_rate": 0.053259752914849245,
+    "num_leaves": 15,
+    "min_child_samples": 316,
+    "feature_fraction": 0.6856331765909087,
+    "bagging_fraction": 0.6943650362179011,
+    "lambda_l2": 14.037354680685327,
+    "min_split_gain": 0.3600691538384655
+  },
+  "lgbm_2h": {
+    "learning_rate": 0.02693008444549291,
+    "num_leaves": 119,
+    "min_child_samples": 203,
+    "feature_fraction": 0.9636993649385135,
+    "bagging_fraction": 0.9474136752138245,
+    "lambda_l2": 0.475193731827956,
+    "min_split_gain": 0.4609371175115584
+  },
+  "lgbm_4h": {
+    "learning_rate": 0.051893147077559244,
+    "num_leaves": 16,
+    "min_child_samples": 122,
+    "feature_fraction": 0.502314474212375,
+    "bagging_fraction": 0.5325257964926398,
+    "lambda_l2": 17.71232641685747,
+    "min_split_gain": 0.4828160165372797
+  },
+  "lgbm_5h": {
+    "learning_rate": 0.051893147077559244,
+    "num_leaves": 16,
+    "min_child_samples": 122,
+    "feature_fraction": 0.502314474212375,
+    "bagging_fraction": 0.5325257964926398,
+    "lambda_l2": 17.71232641685747,
+    "min_split_gain": 0.4828160165372797
+  }
+}

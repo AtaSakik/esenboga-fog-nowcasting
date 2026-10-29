@@ -1,0 +1,338 @@
+{
+  "breiman2001": {
+    "doi": "10.1023/a:1010933404324",
+    "verified": true,
+    "type": "journal-article",
+    "title": "Random Forests",
+    "container": "Machine Learning",
+    "ieee": "L. Breiman, “Random Forests,” Machine Learning, vol. 45, no. 1, pp. 5–32, Oct. 2001, doi: 10.1023/a:1010933404324."
+  },
+  "chen2016": {
+    "doi": "10.1145/2939672.2939785",
+    "verified": true,
+    "type": "proceedings-article",
+    "title": "XGBoost",
+    "container": "Proceedings of the 22nd ACM SIGKDD International Conference on Knowledge Discovery and Data Mining",
+    "ieee": "T. Chen and C. Guestrin, “XGBoost,” in Proceedings of the 22nd ACM SIGKDD International Conference on Knowledge Discovery and Data Mining, pp. 785–794, Aug. 2016, doi: 10.1145/2939672.2939785."
+  },
+  "hochreiter1997": {
+    "doi": "10.1162/neco.1997.9.8.1735",
+    "verified": true,
+    "type": "journal-article",
+    "title": "Long Short-Term Memory",
+    "container": "Neural Computation",
+    "ieee": "S. Hochreiter and J. Schmidhuber, “Long Short-Term Memory,” Neural Computation, vol. 9, no. 8, pp. 1735–1780, Nov. 1997, doi: 10.1162/neco.1997.9.8.1735."
+  },
+  "cho2014": {
+    "doi": "10.3115/v1/d14-1179",
+    "verified": true,
+    "type": "proceedings-article",
+    "title": "Learning Phrase Representations using RNN Encoder–Decoder for Statistical Machine Translation",
+    "container": "Proceedings of the 2014 Conference on Empirical Methods in Natural Language Processing (EMNLP)",
+    "ieee": "K. Cho et al., “Learning Phrase Representations using RNN Encoder–Decoder for Statistical Machine Translation,” in Proceedings of the 2014 Conference on Empirical Methods in Natural Language Processing (EMNLP), pp. 1724–1734, 2014, doi: 10.3115/v1/d14-1179."
+  },
+  "akiba2019": {
+    "doi": "10.1145/3292500.3330701",
+    "verified": true,
+    "type": "proceedings-article",
+    "title": "Optuna",
+    "container": "Proceedings of the 25th ACM SIGKDD International Conference on Knowledge Discovery &amp; Data Mining",
+    "ieee": "T. Akiba, S. Sano, T. Yanase, T. Ohta, and M. Koyama, “Optuna,” in Proceedings of the 25th ACM SIGKDD International Conference on Knowledge Discovery &amp; Data Mining, pp. 2623–2631, Jul. 2019, doi: 10.1145/3292500.3330701."
+  },
+  "cox1958": {
+    "doi": "10.1111/j.2517-6161.1958.tb00292.x",
+    "verified": true,
+    "type": "journal-article",
+    "title": "The Regression Analysis of Binary Sequences",
+    "container": "Journal of the Royal Statistical Society Series B: Statistical Methodology",
+    "ieee": "D. R. Cox, “The Regression Analysis of Binary Sequences,” Journal of the Royal Statistical Society Series B: Statistical Methodology, vol. 20, no. 2, pp. 215–232, Jul. 1958, doi: 10.1111/j.2517-6161.1958.tb00292.x."
+  },
+  "chawla2002": {
+    "doi": "10.1613/jair.953",
+    "verified": true,
+    "type": "journal-article",
+    "title": "SMOTE: Synthetic Minority Over-sampling Technique",
+    "container": "Journal of Artificial Intelligence Research",
+    "ieee": "N. V. Chawla, K. W. Bowyer, L. O. Hall, and W. P. Kegelmeyer, “SMOTE: Synthetic Minority Over-sampling Technique,” Journal of Artificial Intelligence Research, vol. 16, pp. 321–357, Jun. 2002, doi: 10.1613/jair.953."
+  },
+  "he2009": {
+    "doi": "10.1109/tkde.2008.239",
+    "verified": true,
+    "type": "journal-article",
+    "title": "Learning from Imbalanced Data",
+    "container": "IEEE Transactions on Knowledge and Data Engineering",
+    "ieee": "Haibo He and E. A. Garcia, “Learning from Imbalanced Data,” IEEE Transactions on Knowledge and Data Engineering, vol. 21, no. 9, pp. 1263–1284, Sep. 2009, doi: 10.1109/tkde.2008.239."
+  },
+  "saito2015": {
+    "doi": "10.1371/journal.pone.0118432",
+    "verified": true,
+    "type": "journal-article",
+    "title": "The Precision-Recall Plot Is More Informative than the ROC Plot When Evaluating Binary Classifiers on Imbalanced Datasets",
+    "container": "PLOS ONE",
+    "ieee": "T. Saito and M. Rehmsmeier, “The Precision-Recall Plot Is More Informative than the ROC Plot When Evaluating Binary Classifiers on Imbalanced Datasets,” PLOS ONE, vol. 10, no. 3, Art. no. e0118432, Mar. 2015, doi: 10.1371/journal.pone.0118432."
+  },
+  "davis2006": {
+    "doi": "10.1145/1143844.1143874",
+    "verified": true,
+    "type": "proceedings-article",
+    "title": "The relationship between Precision-Recall and ROC curves",
+    "container": "Proceedings of the 23rd international conference on Machine learning  - ICML '06",
+    "ieee": "J. Davis and M. Goadrich, “The relationship between Precision-Recall and ROC curves,” in Proceedings of the 23rd international conference on Machine learning  - ICML '06, pp. 233–240, 2006, doi: 10.1145/1143844.1143874."
+  },
+  "zadrozny2002": {
+    "doi": "10.1145/775047.775151",
+    "verified": true,
+    "type": "proceedings-article",
+    "title": "Transforming classifier scores into accurate multiclass probability estimates",
+    "container": "Proceedings of the eighth ACM SIGKDD international conference on Knowledge discovery and data mining",
+    "ieee": "B. Zadrozny and C. Elkan, “Transforming classifier scores into accurate multiclass probability estimates,” in Proceedings of the eighth ACM SIGKDD international conference on Knowledge discovery and data mining, pp. 694–699, Jul. 2002, doi: 10.1145/775047.775151."
+  },
+  "niculescu2005": {
+    "doi": "10.1145/1102351.1102430",
+    "verified": true,
+    "type": "proceedings-article",
+    "title": "Predicting good probabilities with supervised learning",
+    "container": "Proceedings of the 22nd international conference on Machine learning  - ICML '05",
+    "ieee": "A. Niculescu-Mizil and R. Caruana, “Predicting good probabilities with supervised learning,” in Proceedings of the 22nd international conference on Machine learning  - ICML '05, pp. 625–632, 2005, doi: 10.1145/1102351.1102430."
+  },
+  "frank2001": {
+    "doi": "10.1007/3-540-44795-4_13",
+    "verified": true,
+    "type": "book-chapter",
+    "title": "A Simple Approach to Ordinal Classification",
+    "container": "Lecture Notes in Computer Science",
+    "ieee": "E. Frank and M. Hall, “A Simple Approach to Ordinal Classification,” Lecture Notes in Computer Science, pp. 145–156, 2001, doi: 10.1007/3-540-44795-4_13."
+  },
+  "lundberg2020": {
+    "doi": "10.1038/s42256-019-0138-9",
+    "verified": true,
+    "type": "journal-article",
+    "title": "From local explanations to global understanding with explainable AI for trees",
+    "container": "Nature Machine Intelligence",
+    "ieee": "S. M. Lundberg et al., “From local explanations to global understanding with explainable AI for trees,” Nature Machine Intelligence, vol. 2, no. 1, pp. 56–67, Jan. 2020, doi: 10.1038/s42256-019-0138-9."
+  },
+  "mcgovern2019": {
+    "doi": "10.1175/bams-d-18-0195.1",
+    "verified": true,
+    "type": "journal-article",
+    "title": "Making the Black Box More Transparent: Understanding the Physical Implications of Machine Learning",
+    "container": "Bulletin of the American Meteorological Society",
+    "ieee": "A. McGovern et al., “Making the Black Box More Transparent: Understanding the Physical Implications of Machine Learning,” Bulletin of the American Meteorological Society, vol. 100, no. 11, pp. 2175–2199, Nov. 2019, doi: 10.1175/bams-d-18-0195.1."
+  },
+  "brier1950": {
+    "doi": "10.1175/1520-0493(1950)078<0001:vofeit>2.0.co;2",
+    "verified": true,
+    "type": "journal-article",
+    "title": "VERIFICATION OF FORECASTS EXPRESSED IN TERMS OF PROBABILITY",
+    "container": "Monthly Weather Review",
+    "ieee": "G. W. BRIER, “VERIFICATION OF FORECASTS EXPRESSED IN TERMS OF PROBABILITY,” Monthly Weather Review, vol. 78, no. 1, pp. 1–3, Jan. 1950, doi: 10.1175/1520-0493(1950)078<0001:vofeit>2.0.co;2."
+  },
+  "murphy1973": {
+    "doi": "10.1175/1520-0450(1973)012<0595:anvpot>2.0.co;2",
+    "verified": true,
+    "type": "journal-article",
+    "title": "A New Vector Partition of the Probability Score",
+    "container": "Journal of Applied Meteorology",
+    "ieee": "A. H. Murphy, “A New Vector Partition of the Probability Score,” Journal of Applied Meteorology, vol. 12, no. 4, pp. 595–600, Jun. 1973, doi: 10.1175/1520-0450(1973)012<0595:anvpot>2.0.co;2."
+  },
+  "heidke1926": {
+    "doi": "10.1080/20014422.1926.11881138",
+    "verified": true,
+    "type": "journal-article",
+    "title": "Berechnung Des Erfolges Und Der Güte Der Windstärkevorhersagen Im Sturmwarnungsdienst",
+    "container": "Geografiska Annaler",
+    "ieee": "P. Heidke, “Berechnung Des Erfolges Und Der Güte Der Windstärkevorhersagen Im Sturmwarnungsdienst,” Geografiska Annaler, vol. 8, no. 4, pp. 301–349, Dec. 1926, doi: 10.1080/20014422.1926.11881138."
+  },
+  "doswell1990": {
+    "doi": "10.1175/1520-0434(1990)005<0576:osmosi>2.0.co;2",
+    "verified": true,
+    "type": "journal-article",
+    "title": "On Summary Measures of Skill in Rare Event Forecasting Based on Contingency Tables",
+    "container": "Weather and Forecasting",
+    "ieee": "C. A. Doswell, R. Davies-Jones, and D. L. Keller, “On Summary Measures of Skill in Rare Event Forecasting Based on Contingency Tables,” Weather and Forecasting, vol. 5, no. 4, pp. 576–585, Dec. 1990, doi: 10.1175/1520-0434(1990)005<0576:osmosi>2.0.co;2."
+  },
+  "jolliffe2012": {
+    "doi": "10.1002/9781119960003",
+    "verified": true,
+    "type": "edited-book",
+    "title": "Forecast Verification",
+    "container": "",
+    "ieee": ", Forecast Verification. Wiley, 2011, doi: 10.1002/9781119960003."
+  },
+  "wilks2019": {
+    "doi": "10.1016/c2017-0-03921-6",
+    "verified": true,
+    "type": "edited-book",
+    "title": "Statistical Methods in the Atmospheric Sciences",
+    "container": "",
+    "ieee": ", Statistical Methods in the Atmospheric Sciences. Elsevier, 2019, doi: 10.1016/c2017-0-03921-6."
+  },
+  "epstein1969": {
+    "doi": "10.1175/1520-0450(1969)008<0985:assfpf>2.0.co;2",
+    "verified": true,
+    "type": "journal-article",
+    "title": "A Scoring System for Probability Forecasts of Ranked Categories",
+    "container": "Journal of Applied Meteorology",
+    "ieee": "E. S. Epstein, “A Scoring System for Probability Forecasts of Ranked Categories,” Journal of Applied Meteorology, vol. 8, no. 6, pp. 985–987, Dec. 1969, doi: 10.1175/1520-0450(1969)008<0985:assfpf>2.0.co;2."
+  },
+  "kunsch1989": {
+    "doi": "10.1214/aos/1176347265",
+    "verified": true,
+    "type": "journal-article",
+    "title": "The Jackknife and the Bootstrap for General Stationary Observations",
+    "container": "The Annals of Statistics",
+    "ieee": "H. R. Kunsch, “The Jackknife and the Bootstrap for General Stationary Observations,” The Annals of Statistics, vol. 17, no. 3, pp. 1217–1241, Sep. 1989, doi: 10.1214/aos/1176347265."
+  },
+  "wilks1997": {
+    "doi": "10.1175/1520-0442(1997)010<0065:rhtfaf>2.0.co;2",
+    "verified": true,
+    "type": "journal-article",
+    "title": "Resampling Hypothesis Tests for Autocorrelated Fields",
+    "container": "Journal of Climate",
+    "ieee": "D. S. Wilks, “Resampling Hypothesis Tests for Autocorrelated Fields,” Journal of Climate, vol. 10, no. 1, pp. 65–82, Jan. 1997, doi: 10.1175/1520-0442(1997)010<0065:rhtfaf>2.0.co;2."
+  },
+  "kaufman2012": {
+    "doi": "10.1145/2382577.2382579",
+    "verified": true,
+    "type": "journal-article",
+    "title": "Leakage in data mining",
+    "container": "ACM Transactions on Knowledge Discovery from Data",
+    "ieee": "S. Kaufman, S. Rosset, C. Perlich, and O. Stitelman, “Leakage in data mining,” ACM Transactions on Knowledge Discovery from Data, vol. 6, no. 4, pp. 1–21, Dec. 2012, doi: 10.1145/2382577.2382579."
+  },
+  "alduchov1996": {
+    "doi": "10.1175/1520-0450(1996)035<0601:imfaos>2.0.co;2",
+    "verified": true,
+    "type": "journal-article",
+    "title": "Improved Magnus Form Approximation of Saturation Vapor Pressure",
+    "container": "Journal of Applied Meteorology",
+    "ieee": "O. A. Alduchov and R. E. Eskridge, “Improved Magnus Form Approximation of Saturation Vapor Pressure,” Journal of Applied Meteorology, vol. 35, no. 4, pp. 601–609, Apr. 1996, doi: 10.1175/1520-0450(1996)035<0601:imfaos>2.0.co;2."
+  },
+  "mahringer2008": {
+    "doi": "10.1002/met.62",
+    "verified": true,
+    "type": "journal-article",
+    "title": "Terminal aerodrome forecast verification in Austro Control using time windows and ranges of forecast conditions",
+    "container": "Meteorological Applications",
+    "ieee": "G. Mahringer, “Terminal aerodrome forecast verification in Austro Control using time windows and ranges of forecast conditions,” Meteorological Applications, vol. 15, no. 1, pp. 113–123, Mar. 2008, doi: 10.1002/met.62."
+  },
+  "kneringer2019": {
+    "doi": "10.1007/s00024-018-1863-4",
+    "verified": true,
+    "type": "journal-article",
+    "title": "Probabilistic Nowcasting of Low-Visibility Procedure States at Vienna International Airport During Cold Season",
+    "container": "Pure and Applied Geophysics",
+    "ieee": "P. Kneringer, S. J. Dietz, G. J. Mayr, and A. Zeileis, “Probabilistic Nowcasting of Low-Visibility Procedure States at Vienna International Airport During Cold Season,” Pure and Applied Geophysics, vol. 176, no. 5, pp. 2165–2177, May 2019, doi: 10.1007/s00024-018-1863-4."
+  },
+  "dietz2019a": {
+    "doi": "10.1007/s00024-018-1914-x",
+    "verified": true,
+    "type": "journal-article",
+    "title": "Forecasting Low-Visibility Procedure States with Tree-Based Statistical Methods",
+    "container": "Pure and Applied Geophysics",
+    "ieee": "S. J. Dietz, P. Kneringer, G. J. Mayr, and A. Zeileis, “Forecasting Low-Visibility Procedure States with Tree-Based Statistical Methods,” Pure and Applied Geophysics, vol. 176, no. 6, pp. 2631–2644, Jun. 2019, doi: 10.1007/s00024-018-1914-x."
+  },
+  "dietz2019b": {
+    "doi": "10.5194/ascmo-5-101-2019",
+    "verified": true,
+    "type": "journal-article",
+    "title": "Low-visibility forecasts for different flight planning horizons using tree-based boosting models",
+    "container": "Advances in Statistical Climatology, Meteorology and Oceanography",
+    "ieee": "S. J. Dietz, P. Kneringer, G. J. Mayr, and A. Zeileis, “Low-visibility forecasts for different flight planning horizons using tree-based boosting models,” Advances in Statistical Climatology, Meteorology and Oceanography, vol. 5, no. 1, pp. 101–114, Jun. 2019, doi: 10.5194/ascmo-5-101-2019."
+  },
+  "herman2016": {
+    "doi": "10.1175/waf-d-15-0108.1",
+    "verified": true,
+    "type": "journal-article",
+    "title": "Using Reforecasts to Improve Forecasting of Fog and Visibility for Aviation*",
+    "container": "Weather and Forecasting",
+    "ieee": "G. R. Herman and R. S. Schumacher, “Using Reforecasts to Improve Forecasting of Fog and Visibility for Aviation*,” Weather and Forecasting, vol. 31, no. 2, pp. 467–482, Apr. 2016, doi: 10.1175/waf-d-15-0108.1."
+  },
+  "marzban2007": {
+    "doi": "10.1175/waf994.1",
+    "verified": true,
+    "type": "journal-article",
+    "title": "Ceiling and Visibility Forecasts via Neural Networks",
+    "container": "Weather and Forecasting",
+    "ieee": "C. Marzban, S. Leyton, and B. Colman, “Ceiling and Visibility Forecasts via Neural Networks,” Weather and Forecasting, vol. 22, no. 3, pp. 466–479, Jun. 2007, doi: 10.1175/waf994.1."
+  },
+  "bremnes2007": {
+    "doi": "10.1007/s00024-007-0223-6",
+    "verified": true,
+    "type": "journal-article",
+    "title": "Probabilistic Visibility Forecasting Using Neural Networks",
+    "container": "Pure and Applied Geophysics",
+    "ieee": "J. B. Bremnes and S. C. Michaelides, “Probabilistic Visibility Forecasting Using Neural Networks,” Pure and Applied Geophysics, vol. 164, no. 6-7, pp. 1365–1381, Jun. 2007, doi: 10.1007/s00024-007-0223-6."
+  },
+  "fabbian2007": {
+    "doi": "10.1175/waf980.1",
+    "verified": true,
+    "type": "journal-article",
+    "title": "Application of Artificial Neural Network Forecasts to Predict Fog at Canberra International Airport",
+    "container": "Weather and Forecasting",
+    "ieee": "D. Fabbian, R. de Dear, and S. Lellyett, “Application of Artificial Neural Network Forecasts to Predict Fog at Canberra International Airport,” Weather and Forecasting, vol. 22, no. 2, pp. 372–381, Apr. 2007, doi: 10.1175/waf980.1."
+  },
+  "gultepe2007": {
+    "doi": "10.1007/s00024-007-0211-x",
+    "verified": true,
+    "type": "journal-article",
+    "title": "Fog Research: A Review of Past Achievements and Future Perspectives",
+    "container": "Pure and Applied Geophysics",
+    "ieee": "I. Gultepe et al., “Fog Research: A Review of Past Achievements and Future Perspectives,” Pure and Applied Geophysics, vol. 164, no. 6-7, pp. 1121–1159, Jun. 2007, doi: 10.1007/s00024-007-0211-x."
+  },
+  "castillo2022": {
+    "doi": "10.1016/j.atmosres.2022.106157",
+    "verified": true,
+    "type": "journal-article",
+    "title": "Machine learning regression and classification methods for fog events prediction",
+    "container": "Atmospheric Research",
+    "ieee": "C. Castillo-Botón et al., “Machine learning regression and classification methods for fog events prediction,” Atmospheric Research, vol. 272, Art. no. 106157, Jul. 2022, doi: 10.1016/j.atmosres.2022.106157."
+  },
+  "ortega2023": {
+    "doi": "10.1016/j.ijforecast.2022.03.009",
+    "verified": true,
+    "type": "journal-article",
+    "title": "Deep learning models for visibility forecasting using climatological data",
+    "container": "International Journal of Forecasting",
+    "ieee": "L. C. Ortega, L. D. Otero, M. Solomon, C. E. Otero, and A. Fabregas, “Deep learning models for visibility forecasting using climatological data,” International Journal of Forecasting, vol. 39, no. 2, pp. 992–1004, Apr. 2023, doi: 10.1016/j.ijforecast.2022.03.009."
+  },
+  "kamangir2021": {
+    "doi": "10.1016/j.mlwa.2021.100038",
+    "verified": true,
+    "type": "journal-article",
+    "title": "FogNet: A multiscale 3D CNN with double-branch dense block and attention mechanism for fog prediction",
+    "container": "Machine Learning with Applications",
+    "ieee": "H. Kamangir et al., “FogNet: A multiscale 3D CNN with double-branch dense block and attention mechanism for fog prediction,” Machine Learning with Applications, vol. 5, Art. no. 100038, Sep. 2021, doi: 10.1016/j.mlwa.2021.100038."
+  },
+  "guijo2018": {
+    "doi": "10.1016/j.atmosres.2018.07.017",
+    "verified": true,
+    "type": "journal-article",
+    "title": "Prediction of low-visibility events due to fog using ordinal classification",
+    "container": "Atmospheric Research",
+    "ieee": "D. Guijo-Rubio, P. A. Gutiérrez, C. Casanova-Mateo, J. Sanz-Justo, S. Salcedo-Sanz, and C. Hervás-Martínez, “Prediction of low-visibility events due to fog using ordinal classification,” Atmospheric Research, vol. 214, pp. 64–73, Dec. 2018, doi: 10.1016/j.atmosres.2018.07.017."
+  },
+  "zhu2017": {
+    "doi": "10.4236/acs.2017.73023",
+    "verified": true,
+    "type": "journal-article",
+    "title": "The Application of Deep Learning in Airport Visibility Forecast",
+    "container": "Atmospheric and Climate Sciences",
+    "ieee": "L. Zhu, G. Zhu, L. Han, and N. Wang, “The Application of Deep Learning in Airport Visibility Forecast,” Atmospheric and Climate Sciences, vol. 07, no. 03, pp. 314–322, 2017, doi: 10.4236/acs.2017.73023."
+  },
+  "haeffelin2010": {
+    "doi": "10.1175/2009bams2671.1",
+    "verified": true,
+    "type": "journal-article",
+    "title": "Parisfog",
+    "container": "Bulletin of the American Meteorological Society",
+    "ieee": "M. Haeffelin et al., “Parisfog,” Bulletin of the American Meteorological Society, vol. 91, no. 6, pp. 767–783, Jun. 2010, doi: 10.1175/2009bams2671.1."
+  },
+  "shapley1953": {
+    "doi": "10.1515/9781400881970-018",
+    "verified": true,
+    "type": "book-chapter",
+    "title": "17. A Value for n-Person Games",
+    "container": "Contributions to the Theory of Games (AM-28), Volume II",
+    "ieee": "L. S. Shapley, “17. A Value for n-Person Games,” Contributions to the Theory of Games (AM-28), Volume II, pp. 307–318, Dec. 1953, doi: 10.1515/9781400881970-018."
+  }
+}

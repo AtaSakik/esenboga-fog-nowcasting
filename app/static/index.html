@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>LTAC Sis Erken Uyarı</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/style.css?v=2">
+</head>
+<body>
+  <header class="top">
+    <div class="sign" aria-label="LTAC">LTAC</div>
+    <div class="title">
+      <h1 data-i18n="title">Esenboğa düşük görüş erken uyarı</h1>
+      <p class="sub"><span data-i18n="issued">Son rasat</span> <time id="issued">–</time> · <span id="source"></span></p>
+    </div>
+    <div class="lang" role="group" aria-label="Dil / Language">
+      <button type="button" data-lang="tr" aria-pressed="true">TR</button>
+      <button type="button" data-lang="en" aria-pressed="false">EN</button>
+    </div>
+  </header>
+
+  <section id="alert" class="alert" aria-live="polite">
+    <strong id="alert-title">–</strong>
+    <span id="alert-text"></span>
+  </section>
+
+  <main>
+    <section class="hero" aria-labelledby="hero-h">
+      <h2 id="hero-h" data-i18n="heroTitle">Önümüzdeki 6 saatte sis olasılığı</h2>
+      <p class="hint" data-i18n="heroHint">Sütunlar kalibre edilmiş olasılığı gösterir; sis yükseldikçe yaklaşma ışıkları kaybolur. Bir sütuna tıklayınca etkili faktörler görünür.</p>
+      <div id="lights" class="lights" role="list"></div>
+    </section>
+
+    <div class="grid2">
+      <section class="panel" aria-labelledby="now-h">
+        <h2 id="now-h" data-i18n="nowTitle">Şu an Esenboğa'da</h2>
+        <dl id="now" class="conds"></dl>
+        <pre id="raw" class="raw" aria-label="METAR"></pre>
+      </section>
+      <section class="panel" aria-labelledby="ils-h">
+        <h2 id="ils-h" data-i18n="ilsTitle">ILS kategorisi görünümü (RVR)</h2>
+        <p class="hint" data-i18n="ilsHint">CAT I: RVR ≥ 550 m · CAT II: 350–550 m · CAT III: RVR &lt; 350 m</p>
+        <div id="ils" class="ils"></div>
+      </section>
+    </div>
+
+    <section class="panel" aria-labelledby="why-h">
+      <h2 id="why-h"><span data-i18n="whyTitle">Tahmini belirleyen faktörler</span> <span id="why-h-sel" class="sel"></span></h2>
+      <p class="hint" data-i18n="whyHint">SHAP katkıları: sağa uzanan çubuklar sis riskini artırır, sola uzananlar azaltır.</p>
+      <div id="why" class="why"></div>
+    </section>
+
+    <section class="panel" aria-labelledby="hist-h">
+      <h2 id="hist-h" data-i18n="histTitle">Son 48 saat: gözlem ve 3 saat önceden verilen tahmin</h2>
+      <div id="hist" class="hist"></div>
+      <div class="legend">
+        <span><i class="sw vis"></i><span data-i18n="lgVis">Görüş</span></span>
+        <span><i class="sw rvr"></i>RVR</span>
+        <span><i class="sw prob"></i><span data-i18n="lgProb">3 sa önceki sis olasılığı</span></span>
+        <span><i class="sw thr"></i>1000 m</span>
+      </div>
+    </section>
+
+    <section class="panel" aria-labelledby="ver-h">
+      <h2 id="ver-h" data-i18n="verTitle">Gerçek zamanlı doğrulama</h2>
+      <p class="hint" data-i18n="verHint">Her tahmin kaydedilir ve geçerlilik saati gelince gözlemle karşılaştırılır. "Canlı" uygulamanın çalıştığı dönemi, "yeniden oynatma" ilk açılışta son 72 saatin aynı kodla yeniden üretilmesini gösterir.</p>
+      <div class="table-wrap"><table id="ver"></table></div>
+    </section>
+  </main>
+
+  <footer>
+    <p data-i18n="foot">Araştırma prototipi — operasyonel kullanım için değildir. Resmî tahminler için MGM ve TAF/TREND esas alınmalıdır. Model: kalibre edilmiş LightGBM; eğitim 2005–2019, doğrulama 2019–2022, test 2022–2026 LTAC METAR/SPECI.</p>
+  </footer>
+  <script src="/static/app.js?v=3"></script>
+</body>
+</html>

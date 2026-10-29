@@ -1,0 +1,79 @@
+{
+ "slots": 382607,
+ "slots_obs": 381420,
+ "obs_pct": 99.69,
+ "fog_slots": 3884,
+ "fog_rate_pct": 1.018,
+ "fog_hours_total": 1942.0,
+ "fog_hours_2011_2020": 819.5,
+ "share_oct_feb": 94.6,
+ "share_oct_mar": 96.2,
+ "rate_dec": 4.27,
+ "rate_jan": 3.72,
+ "peak_local_hour": 8,
+ "peak_rate": 2.79,
+ "min_local_hour": 15,
+ "events": 537,
+ "dur_median": 2.0,
+ "dur_mean": 3.62,
+ "dur_p90": 9.0,
+ "dur_max": 35.5,
+ "rvr_reported_when_vis_lt1500_pct": 99.94,
+ "fog_rvr_le350_pct": 55.5,
+ "fog_cls2_pct": 51.4,
+ "fog_cls1_pct": 25.3,
+ "fog_with_FG_pct": 85.1,
+ "fog_with_SN_pct": 4.0,
+ "fog_with_shallowFG_pct": 12.7,
+ "rvr_cls_counts": {
+  "0.0": 378092,
+  "1.0": 1171,
+  "2.0": 2157
+ },
+ "splits": {
+  "train": {
+   "slots": 253017,
+   "fog": 3130,
+   "rate": 1.237
+  },
+  "val": {
+   "slots": 52581,
+   "fog": 308,
+   "rate": 0.586
+  },
+  "test": {
+   "slots": 70073,
+   "fog": 446,
+   "rate": 0.636
+  },
+  "live": {
+   "slots": 5749,
+   "fog": 0,
+   "rate": 0.0
+  }
+ },
+ "annual_fog_hours": {
+  "2005": 78.5,
+  "2006": 198.0,
+  "2007": 106.5,
+  "2008": 255.0,
+  "2009": 79.5,
+  "2010": 113.0,
+  "2011": 58.5,
+  "2012": 148.0,
+  "2013": 48.0,
+  "2014": 120.5,
+  "2015": 97.0,
+  "2016": 44.5,
+  "2017": 136.0,
+  "2018": 56.0,
+  "2019": 86.0,
+  "2020": 25.0,
+  "2021": 52.0,
+  "2022": 53.5,
+  "2023": 31.0,
+  "2024": 60.0,
+  "2025": 80.0,
+  "2026": 15.5
+ }
+}

@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+venv/
+
+# large or regenerable intermediates (rebuilt by scripts/01_prepare_data.py)
+data/interim/
+data/processed/grid.parquet
+results/shap_values_*.npz
+report/preview/
+
+# Office lock files
+~$*
+*.tmp
+
+# logs (the live prediction database is kept on purpose)
+logs/*.log
+
+# regenerable model outputs (≈245 MB; recreated by scripts/02_train_tabular.py and 03_train_deep.py)
+results/predictions/
+
+# local tool configuration
+.claude/
