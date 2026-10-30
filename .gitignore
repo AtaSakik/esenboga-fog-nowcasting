@@ -22,4 +22,3 @@ logs/*.log
 results/predictions/
 
 # local tool configuration
-.claude/
