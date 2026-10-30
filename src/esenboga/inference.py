@@ -10,6 +10,8 @@ from __future__ import annotations
 import csv
 import io
 import math
+import sys
+import time
 import urllib.request
 from datetime import datetime, timedelta, timezone
 
@@ -66,16 +68,23 @@ def fetch_iem(hours: int = HISTORY_H, now: datetime | None = None) -> pd.DataFra
     return pd.DataFrame(rows, columns=["obs_time", "raw", "source", "type_hint"])
 
 
-def fetch_reports(hours: int = HISTORY_H) -> tuple[pd.DataFrame, str]:
-    """Latest reports from AWC; falls back to IEM when AWC is unreachable."""
+def fetch_reports(hours: int = HISTORY_H, awc_attempts: int = 2) -> tuple[pd.DataFrame, str]:
+    """Latest reports from AWC, retried once after a short pause; falls back to IEM, whose
+    archive can lag the newest report by about half an hour. Every failure goes to stderr so
+    that a fallback is visible in the logs."""
     errors = []
-    for name, fn in (("aviationweather.gov", fetch_awc), ("IEM", fetch_iem)):
-        try:
-            df = fn(hours)
-            if len(df):
-                return df.drop_duplicates("obs_time").sort_values("obs_time"), name
-        except Exception as exc:  # network errors -> try the next source
-            errors.append(f"{name}: {exc!r}")
+    for name, fn, attempts in (("aviationweather.gov", fetch_awc, awc_attempts), ("IEM", fetch_iem, 1)):
+        for attempt in range(attempts):
+            try:
+                df = fn(hours)
+                if len(df):
+                    return df.drop_duplicates("obs_time").sort_values("obs_time"), name
+                errors.append(f"{name}: no reports returned")
+            except Exception as exc:  # network errors -> retry, then the next source
+                errors.append(f"{name}: {exc!r}")
+            print(f"METAR source failed: {errors[-1]}", file=sys.stderr)
+            if attempt + 1 < attempts:
+                time.sleep(10)
     raise RuntimeError("no METAR source reachable: " + "; ".join(errors))
 
 

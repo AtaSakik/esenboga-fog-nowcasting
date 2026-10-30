@@ -78,7 +78,7 @@ Individual steps: `python scripts/01_prepare_data.py`, `python -m pytest tests`,
 
 ## Live dashboard (serverless, free)
 
-**https://atasakik.github.io/esenboga-fog-nowcasting/** — refreshed every 30 minutes by the GitHub
+**https://atasakik.github.io/esenboga-fog-nowcasting/** — scheduled every 30 minutes through the GitHub
 Actions workflow [`.github/workflows/live-nowcast.yml`](.github/workflows/live-nowcast.yml), which fetches
 the latest LTAC METARs, logs and verifies the calibrated forecasts and republishes the dashboard to
 GitHub Pages. The prediction database is kept on the single-commit branch `live-data`. GitHub's scheduler
