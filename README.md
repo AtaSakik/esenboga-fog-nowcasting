@@ -84,7 +84,25 @@ the latest LTAC METARs, logs and verifies the calibrated forecasts and republish
 GitHub Pages. The prediction database is kept on the single-commit branch `live-data`. GitHub's scheduler
 often delays or skips runs, so each run, which downloads the last 7 days of reports, also computes the forecasts for
 the issue times skipped during roughly the previous three days from the reports observed up to those times (later
-corrections included) and stores them as `mode='catchup'`, separately from the real-time (`mode='live'`) record. To analyse the live
+corrections included) and stores them as `mode='catchup'`, separately from the real-time (`mode='live'`) record.
+
+Runs start at HH:10 and HH:40 UTC, because aviationweather.gov receives the routine METARs of HH:20 and HH:50
+8–17 minutes after their observation time. For punctual runs, an external scheduler such as
+[cron-job.org](https://cron-job.org) calls the workflow-dispatch endpoint at those minutes, with a fine-grained token
+that is limited to this repository and to *Actions: Read and write*:
+
+```text
+POST https://api.github.com/repos/AtaSakik/esenboga-fog-nowcasting/actions/workflows/live-nowcast.yml/dispatches
+Accept: application/vnd.github+json
+Authorization: Bearer <token>
+X-GitHub-Api-Version: 2022-11-28
+Content-Type: application/json
+
+{"ref": "main"}
+```
+
+GitHub's own schedule remains as the fallback, and every run enables the workflow again, so the rule that turns
+off scheduled workflows after 60 days without repository activity does not stop it. To analyse the live
 record locally (e.g. at the end of the semester):
 
 ```bash
