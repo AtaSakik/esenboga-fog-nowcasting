@@ -1,0 +1,30 @@
+# GitHub's own schedule as the fallback for the external scheduler that starts live-nowcast.yml
+# (see the comment there). It is often late, so it starts the live workflow only when no run has
+# begun in the last 25 minutes. It lives in its own file: if GitHub turns this scheduled workflow
+# off after 60 days without repository activity, live-nowcast.yml still accepts the external trigger.
+name: Live nowcast fallback
+
+on:
+  schedule:
+    - cron: "10,40 * * * *"
+  workflow_dispatch:
+
+permissions:
+  actions: write
+
+jobs:
+  start:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Start the live nowcast unless a run began in the last 25 minutes
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          last=$(gh run list -R "$GITHUB_REPOSITORY" --workflow live-nowcast.yml --limit 1 \
+                   --json createdAt --jq '.[0].createdAt // empty')
+          if [ -n "$last" ] && [ $(( $(date +%s) - $(date -d "$last" +%s) )) -lt 1500 ]; then
+            echo "live-nowcast.yml last started at $last, nothing to do"
+          else
+            gh workflow run live-nowcast.yml -R "$GITHUB_REPOSITORY" --ref main
+          fi

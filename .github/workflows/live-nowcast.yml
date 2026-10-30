@@ -4,19 +4,17 @@
 # the single-commit branch "live-data" (force-pushed, so the repository history does not grow).
 #
 # Timing: aviationweather.gov receives the routine LTAC METARs of HH:20 and HH:50 UTC 8-17 min
-# after their observation time, so runs start at HH:10 and HH:40. GitHub's scheduler often
-# starts them late or skips them; an external scheduler can start the workflow on time through
-# the workflow_dispatch API (see README), with the schedule below as the fallback. Issue times
-# that no run covered are computed by the next run (app/live_log.py, catch_up).
+# after their observation time, so runs start at HH:10 and HH:40. An external scheduler starts
+# them on time through the workflow_dispatch API (see README); GitHub's own schedule, which is
+# often late, is the fallback in live-nowcast-fallback.yml. This file has no schedule, so GitHub's
+# rule that turns off scheduled workflows after 60 days without repository activity does not
+# apply to it. Issue times that no run covered are computed by the next run (app/live_log.py).
 name: Live nowcast
 
 on:
-  schedule:
-    - cron: "10,40 * * * *"
   workflow_dispatch:
 
 permissions:
-  actions: write      # the keep-alive step at the end
   contents: write
   pages: write
   id-token: write
@@ -83,12 +81,3 @@ jobs:
           path: site
       - id: deploy
         uses: actions/deploy-pages@v5
-
-      # GitHub turns off the schedule of a public repository after 60 days without repository
-      # activity; enabling the workflow again on every run resets that timer.
-      - name: Keep the schedule enabled
-        if: always()
-        continue-on-error: true
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: gh api -X PUT "repos/${GITHUB_REPOSITORY}/actions/workflows/live-nowcast.yml/enable"

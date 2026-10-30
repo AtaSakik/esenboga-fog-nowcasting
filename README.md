@@ -78,7 +78,7 @@ Individual steps: `python scripts/01_prepare_data.py`, `python -m pytest tests`,
 
 ## Live dashboard (serverless, free)
 
-**https://atasakik.github.io/esenboga-fog-nowcasting/** — scheduled every 30 minutes through the GitHub
+**https://atasakik.github.io/esenboga-fog-nowcasting/** — run every 30 minutes by the GitHub
 Actions workflow [`.github/workflows/live-nowcast.yml`](.github/workflows/live-nowcast.yml), which fetches
 the latest LTAC METARs, logs and verifies the calibrated forecasts and republishes the dashboard to
 GitHub Pages. The prediction database is kept on the single-commit branch `live-data`. GitHub's scheduler
@@ -101,9 +101,11 @@ Content-Type: application/json
 {"ref": "main"}
 ```
 
-GitHub's own schedule remains as the fallback, and every run enables the workflow again, so the rule that turns
-off scheduled workflows after 60 days without repository activity does not stop it. To analyse the live
-record locally (e.g. at the end of the semester):
+GitHub's own, often late, schedule is the fallback in a separate workflow,
+[`.github/workflows/live-nowcast-fallback.yml`](.github/workflows/live-nowcast-fallback.yml), which starts the live
+workflow only when no run has begun in the last 25 minutes. `live-nowcast.yml` itself has no schedule, so GitHub's
+rule that turns off scheduled workflows of public repositories after 60 days without repository activity can stop
+only the fallback, never the external trigger. To analyse the live record locally (e.g. at the end of the semester):
 
 ```bash
 git fetch origin live-data
