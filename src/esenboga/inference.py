@@ -25,7 +25,9 @@ from .metar import parse_metar
 from .metrics import rvr_class_probs
 
 UA = "Mozilla/5.0 (LTAC fog nowcasting research app)"
-HISTORY_H = 120          # hours of reports needed for the memory features (96 h cap + margin)
+# 7 days of reports: the features need MEMORY_H = 96 h, the rest lets the live cycle recompute
+# skipped issue times (live_log.catch_up). AWC returns at most 400 reports, about 8 days at LTAC.
+HISTORY_H = 168
 
 
 # ============================================================================ retrieval

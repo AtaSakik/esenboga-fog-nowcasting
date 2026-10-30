@@ -365,7 +365,7 @@ def live(lang):
         d = pd.read_csv(p)
         for r in d.itertuples():
             period = r.period.replace("replay", L(lang, "replay", "yeniden oynatma")).replace(
-                "live", L(lang, "live", "canlı"))
+                "live", L(lang, "live", "canlı")).replace("catch-up", L(lang, "catch-up", "sonradan hesaplanan"))
             rows.append([period, f"{r.h} h" if lang == "en" else f"{r.h} sa", num(r.n), num(r.events),
                          num(r.warnings), f(r.POD), f(r.FAR), f(r.Brier, 4)])
     return {"title": L(lang, "Operational verification after the test period",
@@ -375,9 +375,13 @@ def live(lang):
             "rows": rows or [["–"] * 8], "widths": [1.25, 0.4, 0.5, 0.35, 0.5, 0.4, 0.4, 0.5],
             "left_cols": 1,
             "notes": L(lang, "Replay: archived METARs processed with the web-application code; live: forecasts logged "
-                             "by the running application and verified automatically.",
+                             "by the running application and verified automatically; catch-up: forecasts for issue times "
+                             "skipped by the scheduler, computed in the next run from the reports observed up to that time "
+                             "(later corrections included).",
                        "Yeniden oynatma: arşiv METAR'ları web uygulamasının koduyla işlenmiştir; canlı: çalışan uygulamanın "
-                       "kaydettiği ve otomatik doğruladığı tahminler.")}
+                       "kaydettiği ve otomatik doğruladığı tahminler; sonradan hesaplanan: zamanlayıcının atladığı tahmin "
+                       "anlarına ait, bir sonraki çalıştırmada o ana kadar gözlenmiş rasatlarla (sonradan yayımlanan "
+                       "düzeltmeler dahil) hesaplanan tahminler.")}
 
 
 BUILDERS = {"data_summary": data_summary, "splits": splits, "features": features,

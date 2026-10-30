@@ -3,7 +3,9 @@
 Every nowcast cycle stores the calibrated probabilities; once the valid time has passed the
 observed outcome is filled in from the decoded reports, which yields a genuinely real-time
 verification record (mode='live'). ``backfill`` replays the recent past with the same code
-(mode='replay') so that the dashboard is populated immediately after the first start.
+(mode='replay') so that the dashboard is populated immediately after the first start, and
+``catch_up`` computes, in the next cycle, the forecasts for issue times a scheduler skipped
+(mode='catchup', kept apart from the real-time record).
 
 CLI:  python app/live_log.py --once | --loop [--every 600] | --summary
 """
@@ -23,9 +25,14 @@ import pandas as pd
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 from esenboga.config import LOGS, RVR_CAT_I_M, RVR_CAT_II_M, VIS_FOG_M  # noqa: E402
-from esenboga.features import rvr_effective  # noqa: E402
+from esenboga.features import MEMORY_H, rvr_effective  # noqa: E402
 
 DB = LOGS / "live_predictions.sqlite"
+# A skipped issue time is caught up only when the fetched reports reach at least this far back
+# before it, so its features use the same history as in real time (MEMORY_H + 4-h margin); only
+# reports corrected after the fact (COR) can differ from what the skipped run would have seen.
+# With the 7-day fetch (inference.HISTORY_H) this covers about the last 68 h.
+CATCHUP_MIN_HISTORY_H = MEMORY_H + 4
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS predictions (
     issue_time TEXT NOT NULL, horizon INTEGER NOT NULL, target TEXT NOT NULL,
@@ -90,6 +97,11 @@ class LiveLog:
                 n += 1
         return n
 
+    def issue_times(self) -> dict[str, str]:
+        """{issue time (ISO): mode} of every logged forecast."""
+        with self._con() as c:
+            return dict(c.execute("SELECT DISTINCT issue_time, mode FROM predictions").fetchall())
+
     def frame(self, hours: float | None = None) -> pd.DataFrame:
         with self._con() as c:
             df = pd.read_sql_query("SELECT * FROM predictions", c)
@@ -136,25 +148,48 @@ class LiveLog:
         return out
 
 
-def run_cycle(nc, log: LiveLog) -> tuple[dict, int, int]:
+def missed_issue_times(grid: pd.DataFrame, known: dict[str, str], latest: pd.Timestamp,
+                       min_history_h: float = CATCHUP_MIN_HISTORY_H) -> list[pd.Timestamp]:
+    """Issue times the live cycle skipped: grid times with an observation, after the first live
+    forecast and before ``latest``, that have no forecast yet and are preceded by at least
+    ``min_history_h`` of the fetched reports."""
+    live = [pd.Timestamp(t) for t, mode in known.items() if mode == "live"]
+    obs = grid.index[grid["vis_m"].notna().to_numpy()]
+    if not live or not len(obs):
+        return []
+    start = max(min(live), obs[0] + pd.Timedelta(hours=min_history_h))
+    return [t for t in obs if start <= t < latest and t.isoformat() not in known]
+
+
+def catch_up(nc, log: LiveLog, grid: pd.DataFrame, base: pd.DataFrame, latest: pd.Timestamp) -> int:
+    """Forecast the skipped issue times from the reports observed up to each of them (as fetched
+    now, so later corrections are included)."""
+    missed = missed_issue_times(grid, log.issue_times(), latest)
+    for t in missed:
+        log.record(t, nc.predict_at(base, t, explain=False), mode="catchup")
+    return len(missed)
+
+
+def run_cycle(nc, log: LiveLog) -> tuple[dict, dict]:
     """One operational cycle shared by the FastAPI server, the static publisher and the CLI:
-    fetch, forecast (with explanations), log and verify. Returns (nowcast, added, verified)."""
+    fetch, forecast (with explanations), log, catch up skipped issue times and verify.
+    Returns (nowcast, counts)."""
     from esenboga.inference import fetch_reports, run_nowcast
 
     reports, source = fetch_reports()
-    prepared = nc.features_from_reports(reports)
-    res = run_nowcast(nc, source=source, prepared=prepared)
-    added = log.record(pd.Timestamp(res["issue_time"]), {"fog": res["fog"], "rvr": res["rvr"]},
-                       mode="live")
-    verified = log.verify(prepared[0])
-    return res, added, verified
+    grid, base, clean = nc.features_from_reports(reports)
+    res = run_nowcast(nc, source=source, prepared=(grid, base, clean))
+    latest = pd.Timestamp(res["issue_time"])
+    added = log.record(latest, {"fog": res["fog"], "rvr": res["rvr"]}, mode="live")
+    caught_up = catch_up(nc, log, grid, base, latest)
+    verified = log.verify(grid)
+    return res, {"added": added, "caught_up": caught_up, "verified": verified}
 
 
 def cycle(nc, log: LiveLog) -> dict:
     """CLI cycle: the shared cycle, reported as one line of JSON."""
-    res, added, verified = run_cycle(nc, log)
-    return {"issue_time": res["issue_time"], "source": res["source"], "alert": res["alert"],
-            "added": added, "verified": verified}
+    res, counts = run_cycle(nc, log)
+    return {"issue_time": res["issue_time"], "source": res["source"], "alert": res["alert"], **counts}
 
 
 def backfill(nc, log: LiveLog, hours: int = 72) -> int:

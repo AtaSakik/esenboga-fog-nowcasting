@@ -42,7 +42,7 @@ def refresh() -> dict:
         age = _age_s()
         if STATE["result"] is not None and age is not None and age < MIN_REFRESH_S:
             return STATE["result"]
-        res, _, _ = run_cycle(STATE["nc"], STATE["log"])
+        res, _ = run_cycle(STATE["nc"], STATE["log"])
         STATE.update(result=res, fetched=datetime.now(timezone.utc), error=None)
         return res
 

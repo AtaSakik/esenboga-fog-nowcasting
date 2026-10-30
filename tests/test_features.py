@@ -62,3 +62,20 @@ def test_plain_factors_cover_every_feature():
     assert set(FACTOR_OF) == set(FEATURE_LABELS)
     for f in sorted(MODELS.glob("tab_lgbm_fog_*h.joblib")):
         assert set(joblib.load(f).features) <= set(FACTOR_OF), f.name
+
+
+def test_memory_bound_allows_catch_up(reports):
+    """Features at t need only MEMORY_H of history: dropping older reports while keeping later ones
+    (the shape of a catch-up run) leaves them unchanged, also close to the h_since_fog cap."""
+    from esenboga.features import MEMORY_H
+
+    full = make_features(build_grid(reports, start="2023-12-01"))
+    span = pd.Timedelta(hours=MEMORY_H + 4)
+    later = full.index[full.index >= full.index[0] + span + pd.Timedelta(hours=2)]
+    hsf = full.loc[later, "h_since_fog"]
+    near_cap = later[((hsf >= 80) & (hsf < MEMORY_H)).to_numpy()]
+    rng = np.random.default_rng(1)
+    picks = list(rng.choice(later, size=8, replace=False)) + list(near_cap[:: max(1, len(near_cap) // 6)][:6])
+    for t in picks:
+        feat = make_features(build_grid(reports[reports.obs_time >= t - span]))
+        pd.testing.assert_series_equal(full.loc[t], feat.loc[t], check_names=False)

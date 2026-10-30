@@ -3,25 +3,46 @@
 1. Batch replay over the operational period (after the test set, 2026-07-01 -> now) using the
    archived raw METAR text and the *inference* module of the web application.
 2. Parity check: for random issue times the live code path (features rebuilt from only the
-   preceding 120 h of reports, exactly as the app does) must reproduce the batch probabilities.
-3. Real-time log: verified predictions recorded by the running app (mode='live').
+   preceding HISTORY_H hours of reports, exactly as the app does) must reproduce the batch
+   probabilities.
+3. Real-time log: verified predictions recorded by the running app (mode='live') and, reported
+   separately, issue times the scheduler skipped and the next run recomputed (mode='catchup').
 Output: results/tables/operational.csv, results/tables/operational_parity.json
 """
 from __future__ import annotations
 
 import json
+import subprocess
 import sys
+import tempfile
+from datetime import datetime, timezone
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "app"))
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "src"))
+sys.path.insert(0, str(ROOT / "app"))
 from esenboga.config import INTERIM, TABLES, TEST_END, VIS_FOG_M  # noqa: E402
 from esenboga.features import feature_matrix  # noqa: E402
 from esenboga.inference import HISTORY_H, Nowcaster  # noqa: E402
 from esenboga.metrics import brier, categorical_scores  # noqa: E402
+
+
+def live_log_copy() -> Path | None:
+    """The live record is kept on the 'live-data' branch: read its newest copy (None when git or
+    the network is unavailable, in which case the local logs/ copy is used)."""
+    try:
+        subprocess.run(["git", "fetch", "-q", "origin", "live-data"], cwd=ROOT, check=True, timeout=120)
+        blob = subprocess.run(["git", "show", "origin/live-data:live_predictions.sqlite"], cwd=ROOT,
+                              check=True, capture_output=True, timeout=120).stdout
+    except Exception as exc:
+        print("live-data branch unavailable, using the local copy:", exc)
+        return None
+    path = Path(tempfile.gettempdir()) / "ltac_live_predictions.sqlite"
+    path.write_bytes(blob)
+    return path
 
 
 def main() -> None:
@@ -63,10 +84,16 @@ def main() -> None:
     (TABLES / "operational_parity.json").write_text(json.dumps(parity, indent=2))
     # ------------------------------------------------------------------ live log
     try:
-        from live_log import LiveLog
-        for r in LiveLog().summary():
-            if r["mode"] == "live" and r["n"] > 0:
-                rows.append({"period": f"{r['first'][:10]}–{r['last'][:10]} live", "h": r["horizon"],
+        from live_log import DB, LiveLog
+        summary = LiveLog(live_log_copy() or DB).summary()
+        newest = max((pd.Timestamp(r["last"]) for r in summary if r["mode"] == "live"), default=None)
+        if newest is None or datetime.now(timezone.utc) - newest > pd.Timedelta(days=1):
+            print(f"WARNING: newest live forecast {newest}; the live record may be stale or missing")
+        order = {"live": 0, "catchup": 1}      # real-time record first, catch-up rows after it
+        for r in sorted(summary, key=lambda r: (order.get(r["mode"], 9), r["horizon"])):
+            if r["mode"] in order and r["n"] > 0:
+                label = "live" if r["mode"] == "live" else "catch-up"
+                rows.append({"period": f"{r['first'][:10]}–{r['last'][:10]} {label}", "h": r["horizon"],
                              "n": r["n"], "events": r["events"],
                              "warnings": r["hits"] + r["false_alarms"], "POD": r["POD"],
                              "FAR": r["FAR"], "CSI": r["CSI"], "Brier": r["Brier"]})

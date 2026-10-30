@@ -31,7 +31,7 @@ def main() -> None:
     args = ap.parse_args()
 
     log = LiveLog(Path(args.db))
-    res, added, verified = run_cycle(Nowcaster(), log)
+    res, counts = run_cycle(Nowcaster(), log)
 
     out = Path(args.out)
     if out.exists():
@@ -48,7 +48,7 @@ def main() -> None:
     (api / "verification").write_text(json.dumps(log.summary()), encoding="utf-8")
     print(json.dumps({"published": datetime.now(timezone.utc).isoformat(timespec="seconds"),
                       "issue_time": res["issue_time"], "source": res["source"],
-                      "alert": res["alert"], "added": added, "verified": verified}))
+                      "alert": res["alert"], **counts}))
 
 
 if __name__ == "__main__":

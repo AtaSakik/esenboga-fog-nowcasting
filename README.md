@@ -81,14 +81,17 @@ Individual steps: `python scripts/01_prepare_data.py`, `python -m pytest tests`,
 **https://atasakik.github.io/esenboga-fog-nowcasting/** — refreshed every 30 minutes by the GitHub
 Actions workflow [`.github/workflows/live-nowcast.yml`](.github/workflows/live-nowcast.yml), which fetches
 the latest LTAC METARs, logs and verifies the calibrated forecasts and republishes the dashboard to
-GitHub Pages. The prediction database is kept on the single-commit branch `live-data`. To analyse the live
+GitHub Pages. The prediction database is kept on the single-commit branch `live-data`. GitHub's scheduler
+often delays or skips runs, so each run, which downloads the last 7 days of reports, also computes the forecasts for
+the issue times skipped during roughly the previous three days from the reports observed up to those times (later
+corrections included) and stores them as `mode='catchup'`, separately from the real-time (`mode='live'`) record. To analyse the live
 record locally (e.g. at the end of the semester):
 
 ```bash
 git fetch origin live-data
-git show origin/live-data:live_predictions.sqlite > logs/live_predictions.sqlite
+git show origin/live-data:live_predictions.sqlite > logs/live_predictions.sqlite   # Git Bash (binary-safe)
 python app/live_log.py --summary
-python scripts/08_operational_replay.py   # adds the live rows to the operational table
+python scripts/08_operational_replay.py   # reads live-data itself; live and catch-up rows reported separately
 ```
 
 ## Run the early-warning application locally

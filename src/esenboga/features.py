@@ -1,8 +1,8 @@
 """Grid construction, feature engineering and target definition.
 
 The same functions are used offline (20-year archive) and online (web application): the app
-feeds the last 120 h of decoded METARs (``inference.HISTORY_H``; the memory features reach
-back up to 96 h) through :func:`build_grid` and :func:`make_features` and reads the last row.
+feeds the last 7 days of decoded METARs (``inference.HISTORY_H``; no feature looks back more than
+``MEMORY_H`` = 96 h) through :func:`build_grid` and :func:`make_features` and reads the last row.
 Every feature at grid time ``t`` depends only on reports issued at or before ``t`` (verified
 by ``tests/test_features.py::test_no_lookahead_leakage``).
 """
@@ -23,6 +23,7 @@ STATE_COLS = [
 ]
 CEILING_CAP_FT = 10000.0     # "no ceiling" / very high ceilings are capped here
 VIS_CAP_M = 10000.0
+MEMORY_H = 96                # longest look-back of any feature (h_since_fog cap)
 
 
 # ============================================================================ astronomy
@@ -202,10 +203,10 @@ def make_features(grid: pd.DataFrame) -> pd.DataFrame:
     f["br_frac_6h"] = _roll(g["wx_br"].astype(float), 6, "mean")
     f["precip_frac_12h"] = _roll(g["wx_precip"].astype(float), 12, "mean")
     f["snow_frac_72h"] = _roll(g["wx_sn"].astype(float), 72, "mean")
-    # hours since visibility was last below 1000 m (capped at 96 h)
+    # hours since visibility was last below 1000 m (capped at MEMORY_H)
     last_fog_time = pd.Series(np.where(fog_state == 1, np.arange(len(g)), np.nan),
                               index=g.index).ffill()
-    f["h_since_fog"] = ((np.arange(len(g)) - last_fog_time) / 2.0).clip(upper=96).fillna(96)
+    f["h_since_fog"] = ((np.arange(len(g)) - last_fog_time) / 2.0).clip(upper=MEMORY_H).fillna(MEMORY_H)
     f["obs_age_min"] = g["obs_age_min"]
 
     # ---------------------------------------------------------------- calendar / sun

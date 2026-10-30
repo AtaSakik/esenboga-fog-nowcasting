@@ -31,7 +31,7 @@ const I18N = {
     sumYellow: (t, p, thr) => `Saat ${t} için sis olasılığı ${p}, uyarı sınırı ise ${thr}. Henüz uyarı yok ama durum değişebilir.`,
     sumWarn: (t, p, thr) => `Saat ${t} için sis olasılığı ${p} ve uyarı sınırını (${thr}) geçiyor. Uçuşunuz varsa havayolu şirketinizin duyurularını takip edin.`,
     sumNow: (v) => `Şu an görüş mesafesi ${v}. Uçuşlarda gecikmeler olabilir; havayolu şirketinizin duyurularını takip edin.`,
-    stamp: (d, t) => `Son ölçüm: ${d}, saat ${t} (Türkiye saati). Sayfa her yarım saatte bir güncellenir.`,
+    stamp: (d, t) => `Son ölçüm: ${d}, saat ${t} (Türkiye saati). Sayfa normalde yarım saatte bir güncellenir.`,
     stale: (h) => `Dikkat: veriler ${h} saattir güncellenmedi, bu tahmin eskimiş olabilir.`,
 
     hoursTitle: "Saat saat sis olasılığı",
@@ -120,7 +120,7 @@ const I18N = {
     },
 
     histTitle: "Son 48 saat",
-    histLead: "Koyu çizgi ölçülen görüş mesafesidir; kırmızı kesikli çizginin (1 km) altına inerse sis var demektir. Alttaki şerit, her saat için 3 saat önceden verilmiş sis olasılığını gösterir.",
+    histLead: "Koyu çizgi ölçülen görüş mesafesidir; kırmızı kesikli çizginin (1 km) altına inerse sis var demektir. Alttaki şerit, her saat için 3 saat önceden verilmiş sis olasılığını gösterir; açık renkli kısımlar, o saatte sistem çalışmadığı için sonradan hesaplanan tahminlerdir.",
     chartAria: "Son 48 saatte ölçülen görüş mesafesi ve 3 saat önceden verilen sis olasılığı",
     fogZone: "sis",
     nowMark: "şimdi",
@@ -128,25 +128,28 @@ const I18N = {
     lgVis: "Ölçülen görüş mesafesi",
     lgFog: "Sis sınırı (1 km)",
     lgProb: "3 saat önceden verilen sis olasılığı",
+    lgLater: "Sonradan hesaplanan",
     lgRvr: "Pist görüş mesafesi",
 
     verTitle: "Tahminler tuttu mu?",
     verLead: "Sistem her yarım saatte bir tahmin yapıp kaydeder. Tahmin edilen saat gelince, gerçekleşen havayla karşılaştırır.",
     verNone: "Henüz saati gelmiş bir tahmin yok. İlk karşılaştırmalar birkaç saat içinde burada görünecek.",
-    verSince: (d, n) => `${d} tarihinden bu yana ${n} tahmin gerçekleşen havayla karşılaştırıldı.`,
+    verSince: (d, n, c) => `${d} tarihinden bu yana ${n} canlı tahmin${c ? ` ve ${c} sonradan hesaplanan tahmin` : ""} gerçekleşen havayla karşılaştırıldı.`,
     verQuiet: "Bu sürede havalimanında sis görülmedi; sistem de hiç gereksiz uyarı vermedi.",
+    verFogLater: "Bu sürede sis görüldü, ancak yalnızca sistemin çalışmadığı saatlerde; o saatler için sonradan hesaplanan tahminlerin sonuçları ayrıntılı tabloda.",
     verQuietFA: (f) => `Bu sürede havalimanında sis görülmedi; sistem ${f} tahminde gereksiz uyarı verdi.`,
     verEvents: (e, h, m, f) => `Sis görülen anlar için verilen ${e} tahminin ${h} tanesinde sistem önceden uyarmıştı, ${m} tanesinde uyaramadı. Sis olmayan anlarda ise ${f} tahminde gereksiz uyarı verdi.`,
     verTest: "Model, eğitiminde hiç kullanılmamış dört kışlık veriyle (2022–2026) de sınandı. 1 saat önceden verilen tahminler sisli anların %83'ünü yakaladı ve verilen uyarıların %86'sı doğru çıktı. Süre uzadıkça isabet düşer: 3 saat önceden sisli anların %59'u, 6 saat önceden %52'si yakalandı ve 6 saatlik uyarıların yarıdan fazlası boşa çıktı. Uzak saatlerdeki uyarıları bu yüzden bir “dikkat” işareti olarak okuyun.",
     verTech: "Ayrıntılı doğrulama tablosu",
     verCols: ["Kayıt", "Süre", "Tahmin", "Sis", "İsabet", "Gereksiz uyarı", "Kaçırılan", "POD", "FAR", "CSI", "Brier"],
     live: "Canlı",
+    catchup: "Sonradan hesaplanan",
     replay: "Geriye dönük",
     lead: (h) => `${h} sa`,
-    verTechNote: "Canlı: sistemin gerçek zamanlı kayıtları. Geriye dönük: sistem ilk açıldığında önceki 72 saatin aynı kodla yeniden hesaplanması. POD, sislerin ne kadarının önceden bildirildiğini (isabet oranı); FAR, uyarıların ne kadarının boşa çıktığını (yanlış alarm oranı) gösterir. CSI kritik başarı indeksidir, 1 en iyisidir. Brier skoru olasılık hatasıdır, 0 en iyisidir. Hiç sis görülmediyse POD, FAR ve CSI hesaplanamaz (–).",
+    verTechNote: "Canlı: sistemin gerçek zamanlı kayıtları. Sonradan hesaplanan: GitHub planlı bir güncellemeyi atladığında, o saatin tahmini bir sonraki güncellemede o saate kadar gözlenmiş raporlarla (sonradan yayımlanan düzeltmeler dahil) hesaplanır ve canlı kayıtlardan ayrı tutulur. Geriye dönük: sistem ilk açıldığında önceki 72 saatin aynı kodla yeniden hesaplanması. POD, sislerin ne kadarının önceden bildirildiğini (isabet oranı); FAR, uyarıların ne kadarının boşa çıktığını (yanlış alarm oranı) gösterir. CSI kritik başarı indeksidir, 1 en iyisidir. Brier skoru olasılık hatasıdır, 0 en iyisidir. Hiç sis görülmediyse POD, FAR ve CSI hesaplanamaz (–).",
 
     aboutTitle: "Bu site nasıl çalışıyor?",
-    step1: "Esenboğa'nın son 5 güne ait hava raporları her yarım saatte bir otomatik olarak indirilir.",
+    step1: "Esenboğa'nın son 7 güne ait hava raporları yarım saatte bir otomatik olarak indirilir. Ücretsiz sunucu bazen bir güncellemeyi geciktirir ya da atlar; atlanan saatlerin tahminleri bir sonraki güncellemede tamamlanır.",
     step2: "2005–2019 yıllarının gözlemleriyle eğitilen bir yapay zekâ modeli (LightGBM), önümüzdeki 1–6 saatin her biri için sis olasılığını hesaplar.",
     step3: "Her tahmin kaydedilir ve saati gelince gerçekleşen havayla karşılaştırılır. Sonuçlar “Tahminler tuttu mu?” bölümünde herkese açıktır.",
     climate: "Esenboğa'da yılda ortalama 90 saat kadar sis görülür. Sislerin %95'i Ekim–Şubat arasında oluşur; en sık sabah 08.00 civarında görülür ve güneş yükseldikçe çoğu dağılır.",
@@ -192,7 +195,7 @@ const I18N = {
     sumYellow: (t, p, thr) => `The chance of fog for ${t} is ${p}; the warning level is ${thr}. No warning yet, but this can change.`,
     sumWarn: (t, p, thr) => `The chance of fog for ${t} is ${p}, above the warning level (${thr}). If you are flying, follow your airline's updates.`,
     sumNow: (v) => `Visibility is ${v} right now. Flights may be delayed; follow your airline's updates.`,
-    stamp: (d, t) => `Latest observation: ${d}, ${t} (Turkey time). The page updates every half hour.`,
+    stamp: (d, t) => `Latest observation: ${d}, ${t} (Turkey time). The page normally updates every half hour.`,
     stale: (h) => `Note: the data has not been updated for ${h} hours, so this forecast may be out of date.`,
 
     hoursTitle: "Fog chance hour by hour",
@@ -281,7 +284,7 @@ const I18N = {
     },
 
     histTitle: "The last 48 hours",
-    histLead: "The dark line is the measured visibility; when it drops below the red dashed line (1 km) there is fog. The strip below shows the chance of fog that was forecast 3 hours earlier for each time.",
+    histLead: "The dark line is the measured visibility; when it drops below the red dashed line (1 km) there is fog. The strip below shows the chance of fog that was forecast 3 hours earlier for each time; lighter parts were computed later because the system did not run at that time.",
     chartAria: "Measured visibility over the last 48 hours and the chance of fog forecast 3 hours earlier",
     fogZone: "fog",
     nowMark: "now",
@@ -289,25 +292,28 @@ const I18N = {
     lgVis: "Measured visibility",
     lgFog: "Fog limit (1 km)",
     lgProb: "Chance of fog forecast 3 hours earlier",
+    lgLater: "Computed later",
     lgRvr: "Runway visual range",
 
     verTitle: "Were the forecasts right?",
     verLead: "Every half hour the system makes and stores a forecast. When the forecast time arrives, it is compared with the actual weather.",
     verNone: "No forecast has reached its time yet. The first comparisons will appear here within a few hours.",
-    verSince: (d, n) => `Since ${d}, ${n} forecasts have been compared with the actual weather.`,
+    verSince: (d, n, c) => `Since ${d}, ${n} live forecasts${c ? ` and ${c} forecasts computed later` : ""} have been compared with the actual weather.`,
     verQuiet: "There has been no fog at the airport in that time, and the system has not issued a single unnecessary warning.",
+    verFogLater: "There was fog in that time, but only when the system did not run; the results of the forecasts computed later for those times are in the detailed table.",
     verQuietFA: (f) => `There has been no fog at the airport in that time; the system issued an unnecessary warning in ${f} forecasts.`,
     verEvents: (e, h, m, f) => `Of ${e} forecasts for times with fog, the system had warned in ${h} and missed ${m}. For times without fog, it issued an unnecessary warning in ${f} forecasts.`,
     verTest: "The model was also tested on four winters of data it never saw in training (2022–2026). Forecasts made 1 hour ahead caught 83% of foggy times, and 86% of the warnings were correct. Accuracy drops with lead time: 59% of foggy times were caught 3 hours ahead and 52% 6 hours ahead, and more than half of the 6-hour warnings were false alarms. Read warnings for later hours as a heads-up.",
     verTech: "Detailed verification table",
     verCols: ["Record", "Lead", "Forecasts", "Fog", "Hits", "False alarms", "Misses", "POD", "FAR", "CSI", "Brier"],
     live: "Live",
+    catchup: "Catch-up",
     replay: "Replay",
     lead: (h) => `${h} h`,
-    verTechNote: "Live: the system's real-time records. Replay: the 72 hours before the first start, recomputed with the same code. POD is the share of fog that was forecast (hit rate); FAR is the share of warnings that were false alarms. CSI is the critical success index (1 is best). The Brier score is the probability error (0 is best). Without any fog, POD, FAR and CSI cannot be computed (–).",
+    verTechNote: "Live: the system's real-time records. Catch-up: when GitHub skips a scheduled update, the forecast for that time is computed at the next update from the reports observed up to that time (including any later corrections), and kept apart from the live records. Replay: the 72 hours before the first start, recomputed with the same code. POD is the share of fog that was forecast (hit rate); FAR is the share of warnings that were false alarms. CSI is the critical success index (1 is best). The Brier score is the probability error (0 is best). Without any fog, POD, FAR and CSI cannot be computed (–).",
 
     aboutTitle: "How this site works",
-    step1: "Esenboğa's weather reports for the last 5 days are downloaded automatically every half hour.",
+    step1: "Esenboğa's weather reports for the last 7 days are downloaded automatically every half hour. The free server sometimes delays or skips an update; the forecasts for skipped times are filled in at the next update.",
     step2: "A machine-learning model (LightGBM), trained on observations from 2005–2019, computes the chance of fog for each of the next 1 to 6 hours.",
     step3: "Every forecast is stored and compared with the actual weather when its time comes. The results are public under “Were the forecasts right?”.",
     climate: "Esenboğa sees about 90 hours of fog a year. 95% of it forms between October and February, most often around 08:00 in the morning, and most of it clears as the sun climbs.",
@@ -697,17 +703,24 @@ function renderChart() {
   for (const d of rvr) s += `<circle class="rvr" cx="${f1(x(Date.parse(d.t)))}" cy="${f1(yA(d.rvr_m))}" r="3"/>`;
 
   s += hline("grid", yB(0)) + hline("grid", yB(1)) + ylabel(yB(1), pctLabel(100)) + ylabel(yB(0), pctLabel(0));
-  const byTime = new Map();   // live records win over replayed ones for the same valid time
-  for (const d of LOG) {
-    const ms = Date.parse(d.valid_time);
-    if (ms >= t0 && ms <= t1 && (!byTime.has(ms) || d.mode === "live")) byTime.set(ms, d);
-  }
-  const probs = [...byTime.entries()].sort((a, b) => a[0] - b[0]);
+  // one 3-h forecast per valid time: real-time ones solid, ones computed later (catch-up, replay) lighter
+  const probs = LOG.map((d) => [Date.parse(d.valid_time), d]).filter(([ms]) => ms >= t0 && ms <= t1)
+    .sort((a, b) => a[0] - b[0]);
+  const isLive = (d) => d.mode === "live";
+  const area = (pts, cls) => `<path class="${cls}" d="M${f1(x(pts[0][0]))} ${f1(yB(0))}` +
+    pts.map(([ms, d]) => ` L${f1(x(ms))} ${f1(yB(Math.min(1, d.p)))}`).join("") +
+    ` L${f1(x(pts[pts.length - 1][0]))} ${f1(yB(0))} Z"/>`;
+  let seg = [];
+  probs.forEach((pt, i) => {   // a segment runs until the kind changes and ends on the next point, so they join
+    seg.push(pt);
+    const next = probs[i + 1];
+    if (!next || isLive(next[1]) !== isLive(pt[1])) {
+      s += area(next ? seg.concat([next]) : seg, isLive(pt[1]) ? "probarea" : "probarea later");
+      seg = [];
+    }
+  });
+  const later = probs.some(([, d]) => !isLive(d));
   if (probs.length) {
-    let a = `M${f1(x(probs[0][0]))} ${f1(yB(0))}`;
-    for (const [ms, d] of probs) a += ` L${f1(x(ms))} ${f1(yB(Math.min(1, d.p)))}`;
-    a += ` L${f1(x(probs[probs.length - 1][0]))} ${f1(yB(0))} Z`;
-    s += `<path class="probarea" d="${a}"/>`;
     const thr = probs[probs.length - 1][1].thr;
     if (isNum(thr)) s += hline("limit", yB(thr)) + `<text x="${W - pr - 4}" y="${f1(yB(thr) - 4)}" text-anchor="end">${esc(L.limit)}</text>`;
   }
@@ -720,26 +733,37 @@ function renderChart() {
   s += `<line class="nowline" x1="${f1(x(now))}" x2="${f1(x(now))}" y1="${top - 4}" y2="${f1(yB(0))}"/>` +
     `<text class="nowlabel" x="${f1(x(now))}" y="${top - 8}" text-anchor="middle">${esc(L.nowMark)}</text>`;
   box.innerHTML = s + "</svg>";
-  $("legend").innerHTML = [["sw-vis", L.lgVis], ["sw-fog", L.lgFog], ["sw-prob", L.lgProb], ...(rvr.length ? [["sw-rvr", L.lgRvr]] : [])]
+  $("legend").innerHTML = [["sw-vis", L.lgVis], ["sw-fog", L.lgFog], ["sw-prob", L.lgProb],
+    ...(later ? [["sw-later", L.lgLater]] : []), ...(rvr.length ? [["sw-rvr", L.lgRvr]] : [])]
     .map(([k, v]) => `<span><i class="${k}" aria-hidden="true"></i>${esc(v)}</span>`).join("");
 }
 
 function renderVer() {
-  const L = T(), live = VER.filter((r) => r.mode === "live");
-  const sum = (k) => live.reduce((a, r) => a + (r[k] || 0), 0);
-  const n = sum("n"), e = sum("events"), h = sum("hits"), m = sum("misses"), f = sum("false_alarms");
+  const L = T();
+  const rowsOf = (mode) => VER.filter((r) => r.mode === mode);
+  const total = (rows, k) => rows.reduce((a, r) => a + (r[k] || 0), 0);
+  const live = rowsOf("live"), catchup = rowsOf("catchup");
+  const n = total(live, "n"), c = total(catchup, "n");
   if (!n) {
     $("ver-live").textContent = L.verNone;
   } else {
+    // warnings count only when they were really issued (live); whether fog occurred uses every
+    // verified operational forecast, including the ones computed later for skipped times
+    const [e, h, m, f] = ["events", "hits", "misses", "false_alarms"].map((k) => total(live, k));
+    const fogLater = total(catchup, "events") > 0;
+    const tail = e ? L.verEvents(num(e), num(h), num(m), num(f)) : fogLater ? L.verFogLater
+      : f ? L.verQuietFA(num(f)) : L.verQuiet;
     const first = Math.min(...live.map((r) => Date.parse(r.first)));
-    const tail = e ? L.verEvents(num(e), num(h), num(m), num(f)) : f ? L.verQuietFA(num(f)) : L.verQuiet;
-    $("ver-live").textContent = `${L.verSince(dateOf(first, false), num(n))} ${tail}`;
+    $("ver-live").textContent = `${L.verSince(dateOf(first, false), num(n), c ? num(c) : 0)} ${tail}`;
   }
-  const rows = VER.slice().sort((a, b) => (a.mode === b.mode ? a.horizon - b.horizon : a.mode === "live" ? -1 : 1));
+  const order = { live: 0, catchup: 1, replay: 2 };
+  const rank = (m) => (m in order ? order[m] : 3);
+  const modeName = (m) => (m in order ? L[m] : m);
+  const rows = VER.slice().sort((a, b) => rank(a.mode) - rank(b.mode) || a.horizon - b.horizon);
   const opt = (v, digits) => (isNum(v) ? num(v, digits) : "–");
   $("ver").innerHTML = !rows.length ? "" :
     `<thead><tr>${L.verCols.map((x) => `<th scope="col">${esc(x)}</th>`).join("")}</tr></thead><tbody>` +
-    rows.map((r) => `<tr><td>${esc(r.mode === "live" ? L.live : L.replay)}</td><td>${esc(L.lead(r.horizon))}</td>` +
+    rows.map((r) => `<tr><td>${esc(modeName(r.mode))}</td><td>${esc(L.lead(r.horizon))}</td>` +
       `<td>${num(r.n)}</td><td>${num(r.events)}</td><td>${num(r.hits)}</td><td>${num(r.false_alarms)}</td><td>${num(r.misses)}</td>` +
       `<td>${opt(r.POD, 2)}</td><td>${opt(r.FAR, 2)}</td><td>${opt(r.CSI, 2)}</td><td>${opt(r.Brier, 4)}</td></tr>`).join("") + "</tbody>";
 }
