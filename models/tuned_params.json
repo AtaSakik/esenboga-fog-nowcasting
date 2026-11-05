@@ -79,5 +79,26 @@
     "bagging_fraction": 0.5325257964926398,
     "lambda_l2": 17.71232641685747,
     "min_split_gain": 0.4828160165372797
+  },
+  "cat_1h": {
+    "learning_rate": 0.07805114990790261,
+    "depth": 7,
+    "l2_leaf_reg": 9.835390354080578,
+    "random_strength": 0.2094785363111184,
+    "bagging_temperature": 0.06337055781784952
+  },
+  "cat_3h": {
+    "learning_rate": 0.05834074653042959,
+    "depth": 8,
+    "l2_leaf_reg": 3.8416151408967307,
+    "random_strength": 0.07285157699994188,
+    "bagging_temperature": 0.2331661603331974
+  },
+  "cat_6h": {
+    "learning_rate": 0.09181822916635037,
+    "depth": 7,
+    "l2_leaf_reg": 3.106827231360093,
+    "random_strength": 1.6556145220311747,
+    "bagging_temperature": 0.9567299436678074
   }
 }

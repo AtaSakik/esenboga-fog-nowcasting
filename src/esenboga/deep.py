@@ -1,8 +1,10 @@
-"""Multi-task recurrent networks (GRU / LSTM) for low-visibility nowcasting.
+"""Multi-task sequence networks (GRU, LSTM, TCN, Transformer) for low-visibility nowcasting.
 
 One network reads the last ``SEQ_LEN`` half-hourly grid states (12 h) and predicts all nine
 binary tasks {VIS<1000 m, RVR<550 m, RVR<350 m} x {1, 3, 6 h} with a masked binary
-cross-entropy. Long-memory and valid-time astronomical features enter as static inputs.
+cross-entropy. Long-memory and valid-time astronomical features enter as static inputs. The four
+encoders differ only in how they summarise the 12-h sequence: recurrence (GRU, LSTM), dilated
+causal convolutions (TCN; Bai et al. 2018) or self-attention (Transformer; Vaswani et al. 2017).
 """
 from __future__ import annotations
 
@@ -55,19 +57,55 @@ def build_arrays(feats: pd.DataFrame, targ: pd.DataFrame, stats: dict | None = N
     return S, Z, Y, stats
 
 
+class CausalConvBlock(nn.Module):
+    """Residual block of two dilated causal 1-D convolutions (TCN; Bai et al. 2018)."""
+
+    def __init__(self, c_in: int, c_out: int, dilation: int, dropout: float, kernel: int = 3):
+        super().__init__()
+        self.pad = (kernel - 1) * dilation
+        self.conv1 = nn.Conv1d(c_in, c_out, kernel, dilation=dilation)
+        self.conv2 = nn.Conv1d(c_out, c_out, kernel, dilation=dilation)
+        self.drop = nn.Dropout(dropout)
+        self.skip = nn.Conv1d(c_in, c_out, 1) if c_in != c_out else nn.Identity()
+
+    def forward(self, x):                       # x: (batch, channels, time)
+        y = self.drop(torch.relu(self.conv1(nn.functional.pad(x, (self.pad, 0)))))
+        y = self.drop(torch.relu(self.conv2(nn.functional.pad(y, (self.pad, 0)))))
+        return torch.relu(y + self.skip(x))
+
+
 class SeqNet(nn.Module):
     def __init__(self, n_seq: int, n_static: int, n_out: int, cell: str = "gru",
                  hidden: int = 64, layers: int = 2, dropout: float = 0.2):
         super().__init__()
-        rnn = nn.GRU if cell == "gru" else nn.LSTM
-        self.rnn = rnn(n_seq, hidden, num_layers=layers, batch_first=True, dropout=dropout)
+        self.cell = cell
+        if cell in ("gru", "lstm"):
+            rnn = nn.GRU if cell == "gru" else nn.LSTM
+            self.rnn = rnn(n_seq, hidden, num_layers=layers, batch_first=True, dropout=dropout)
+        elif cell == "tcn":
+            # dilations 1, 2, 4, 8: receptive field 1 + 2*2*(1+2+4+8) = 61 steps >= SEQ_LEN
+            self.tcn = nn.Sequential(*[CausalConvBlock(n_seq if i == 0 else hidden, hidden, 2 ** i,
+                                                       dropout) for i in range(4)])
+        else:
+            self.inp = nn.Linear(n_seq, hidden)
+            self.pos = nn.Parameter(torch.zeros(1, SEQ_LEN, hidden))
+            layer = nn.TransformerEncoderLayer(hidden, nhead=4, dim_feedforward=2 * hidden,
+                                               dropout=dropout, batch_first=True, norm_first=True)
+            self.encoder = nn.TransformerEncoder(layer, num_layers=layers, enable_nested_tensor=False)
         self.head = nn.Sequential(
             nn.Linear(hidden + n_static, 128), nn.ReLU(), nn.Dropout(dropout),
             nn.Linear(128, 64), nn.ReLU(), nn.Linear(64, n_out))
 
+    def encode(self, x_seq):
+        """Summary vector of the sequence at its last (most recent) time step."""
+        if self.cell in ("gru", "lstm"):
+            return self.rnn(x_seq)[0][:, -1]
+        if self.cell == "tcn":
+            return self.tcn(x_seq.transpose(1, 2))[:, :, -1]
+        return self.encoder(self.inp(x_seq) + self.pos[:, -x_seq.shape[1]:])[:, -1]
+
     def forward(self, x_seq, x_static):
-        out, _ = self.rnn(x_seq)
-        return self.head(torch.cat([out[:, -1], x_static], dim=1))
+        return self.head(torch.cat([self.encode(x_seq), x_static], dim=1))
 
 
 def gather_windows(S: torch.Tensor, idx: torch.Tensor, seq_len: int = SEQ_LEN) -> torch.Tensor:

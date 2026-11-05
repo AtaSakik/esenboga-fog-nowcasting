@@ -9,6 +9,8 @@ Contingency table convention (Jolliffe & Stephenson 2012; Wilks 2019)::
 POD = a/(a+c)   FAR = b/(a+b)   CSI = a/(a+b+c)   bias = (a+b)/(a+c)
 HSS = 2(ad-bc)/[(a+c)(c+d)+(a+b)(b+d)]           PSS = a/(a+c) - b/(b+d)
 ETS = (a-a_r)/(a+b+c-a_r), a_r = (a+b)(a+c)/n
+SEDI = [ln F - ln H - ln(1-F) + ln(1-H)] / [ln F + ln H + ln(1-F) + ln(1-H)], H = POD, F = POFD
+       (Ferro & Stephenson 2011: does not degenerate to zero as events become rarer)
 """
 from __future__ import annotations
 
@@ -44,7 +46,31 @@ def categorical_scores(y: np.ndarray, yhat: np.ndarray) -> dict:
     return {"hits": a, "false_alarms": b, "misses": c, "correct_neg": d,
             "POD": pod, "FAR": far, "CSI": csi, "POFD": pofd, "HSS": hss,
             "PSS": pod - pofd if not (np.isnan(pod) or np.isnan(pofd)) else nan,
-            "ETS": ets, "bias": (a + b) / (a + c) if a + c else nan, "F1": f1}
+            "ETS": ets, "bias": (a + b) / (a + c) if a + c else nan, "F1": f1,
+            "SEDI": sedi(pod, pofd)}
+
+
+def sedi(H: float, F: float) -> float:
+    """Symmetric extremal dependence index (Ferro & Stephenson 2011); nan if H or F is 0 or 1."""
+    if not (0 < H < 1 and 0 < F < 1):
+        return float("nan")
+    lf, lh, l1f, l1h = np.log(F), np.log(H), np.log(1 - F), np.log(1 - H)
+    return float((lf - lh - l1f + l1h) / (lf + lh + l1f + l1h))
+
+
+def relative_value(y: np.ndarray, yhat: np.ndarray, alpha: np.ndarray) -> np.ndarray:
+    """Relative economic value (Richardson 2000) of yes/no forecasts for users whose cost of
+    protecting is a fraction ``alpha`` of the loss they suffer when an unprotected event occurs:
+    1 = as useful as a perfect forecast, 0 = no better than always/never protecting
+    (whichever is cheaper on climatology), negative = worse."""
+    a, b, c, d = contingency(y, yhat)
+    n = a + b + c + d
+    s = (a + c) / n
+    alpha = np.asarray(alpha, float)
+    expense = alpha * (a + b) / n + c / n
+    clim = np.minimum(alpha, s)
+    with np.errstate(divide="ignore", invalid="ignore"):
+        return (clim - expense) / (clim - s * alpha)
 
 
 def brier(y: np.ndarray, p: np.ndarray) -> float:

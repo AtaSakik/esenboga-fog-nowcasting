@@ -20,5 +20,9 @@ logs/*.log
 
 # regenerable model outputs (≈245 MB; recreated by scripts/02_train_tabular.py and 03_train_deep.py)
 results/predictions/
+# the analog models store their training archive (≈20 MB); refitting them takes seconds
+models/tab_knn_*.joblib
+catboost_info/
+logs/bench_status.txt
 
 # local tool configuration

@@ -1,4 +1,4 @@
-"""Step 3 – multi-task GRU and LSTM (PyTorch, GPU if available).
+"""Step 3 – multi-task GRU, LSTM, TCN and Transformer (PyTorch, GPU if available).
 
 Early stopping on the mean validation PR-AUC of the nine tasks; per-task calibration and
 CSI-optimal thresholds on validation. Predictions are merged into
@@ -91,8 +91,11 @@ def train_one(cell: str, S, Z, Y, idx_tr, idx_va, device, epochs=30, patience=5,
 
 def main() -> None:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--cells", nargs="+", default=["gru", "lstm"])
+    ap.add_argument("--cells", nargs="+", default=["gru", "lstm", "tcn", "transformer"])
     ap.add_argument("--epochs", type=int, default=30)
+    ap.add_argument("--timing", action="store_true",
+                    help="refit the selected configuration of each cell once and store its fit "
+                         "time in the saved bundle (weights and predictions stay unchanged)")
     args = ap.parse_args()
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     feats, targ = load_processed()
@@ -113,21 +116,33 @@ def main() -> None:
     idx_all = pos[present & (pos >= SEQ_LEN - 1)]
 
     for cell in args.cells:
+        if args.timing:
+            f = MODELS / f"deep_{cell}.joblib"
+            bundle = joblib.load(f)          # our own model file
+            c = bundle["config"]
+            t1 = time.time()
+            train_one(cell, S, Z, Y, idx_tr, idx_va, device, epochs=args.epochs, lr=c["lr"],
+                      hidden=c["hidden"], dropout=c["dropout"], wd=c["weight_decay"], verbose=False)
+            bundle["train_seconds"] = time.time() - t1
+            joblib.dump(bundle, f)
+            log(f"{cell}: selected configuration refits in {bundle['train_seconds']:.0f}s")
+            continue
         t0 = time.time()
         results = []
         for hidden, dropout, lr, wd in SEARCH:
+            t1 = time.time()
             m_, s_ = train_one(cell, S, Z, Y, idx_tr, idx_va, device, epochs=args.epochs,
                                lr=lr, hidden=hidden, dropout=dropout, wd=wd, verbose=False)
-            results.append((s_, (hidden, dropout, lr, wd), m_))
+            results.append((s_, (hidden, dropout, lr, wd), m_, time.time() - t1))
             log(f"  {cell} hidden={hidden} dropout={dropout} lr={lr} wd={wd}: val meanAP={s_:.4f}")
-        best, cfg, model = max(results, key=lambda r: r[0])
+        best, cfg, model, secs = max(results, key=lambda r: r[0])
         log(f"  {cell} selected {cfg}")
         logits = predict_logits(model, S, Z, idx_all)
         probs = 1 / (1 + np.exp(-logits))
         bundle = {"state_dict": {k: v.cpu() for k, v in model.state_dict().items()},
                   "cell": cell, "stats": stats, "n_seq": S.shape[1], "n_static": Z.shape[1],
                   "config": dict(zip(("hidden", "dropout", "lr", "weight_decay"), cfg)),
-                  "search": [(s, c) for s, c, _ in results],
+                  "search": [(s, c) for s, c, _, _ in results], "train_seconds": secs,
                   "calibrators": {}, "thresholds": {}}
         val_pos = np.isin(idx_all, idx_va)
         seasons = fog_season(feats.index[idx_all[val_pos]])

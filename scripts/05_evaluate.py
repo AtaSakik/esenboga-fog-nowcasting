@@ -1,8 +1,9 @@
-"""Step 5 – verification of all models against persistence, climatology, METAR TREND and TAF.
+"""Step 5 – verification of all models against persistence, a forecaster's rule of thumb,
+climatology, METAR TREND and TAF.
 
 Outputs (results/tables): scores_<split>.csv, bootstrap_test.csv, paired_tests.csv,
 trend_comparison.csv, taf_comparison.csv, onset_dissipation.csv, rvr_multiclass.csv,
-per_season.csv, leadtime_curve.csv; plus results/metrics.json.
+per_season.csv, leadtime_curve.csv, expert_rule.json; plus results/metrics.json.
 """
 from __future__ import annotations
 
@@ -10,44 +11,22 @@ import json
 import sys
 from pathlib import Path
 
-import joblib
 import numpy as np
 import pandas as pd
-import pyarrow.parquet as pq
 from sklearn.metrics import average_precision_score
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
-from esenboga.baselines import load_taf_archive, taf_forecasts, trend_forecasts, vis_to_event  # noqa: E402
-from esenboga.config import (COLD_SEASON_MONTHS, HORIZONS, HORIZONS_ALL, MODELS,  # noqa: E402
+from esenboga.baselines import (expert_rule, load_taf_archive, taf_forecasts,  # noqa: E402
+                                trend_forecasts, tune_expert_rule, vis_to_event)
+from esenboga.benchmark import ML, PRED_DIR, load_task  # noqa: E402
+from esenboga.config import (COLD_SEASON_MONTHS, HORIZONS, HORIZONS_ALL,  # noqa: E402
                              PROCESSED, RESULTS, RVR_CAT_I_M, RVR_CAT_II_M, TABLES)
 from esenboga.data import climatology, fog_season  # noqa: E402
+from esenboga.features import feature_matrix  # noqa: E402
 from esenboga.metrics import (brier, categorical_scores, multiclass_scores,  # noqa: E402
                               probabilistic_scores, rvr_class_probs)
 
-PRED_DIR = RESULTS / "predictions"
-TAB = ["lr", "rf", "xgb", "lgbm"]
-DEEP = ["gru", "lstm"]
 RNG = np.random.default_rng(2026)
-
-
-# ============================================================================ loading
-def load_task(target: str, h: int) -> tuple[pd.DataFrame, dict]:
-    # joblib (pickle) is only used for model files written by our own training scripts
-    pred = pd.read_parquet(PRED_DIR / f"pred_{target}_{h}h.parquet")
-    thr = {}
-    for m in TAB:
-        f = MODELS / f"tab_{m}_{target}_{h}h.joblib"
-        if f.exists() and m in pred:
-            thr[m] = joblib.load(f).threshold
-    for c in DEEP:
-        f, b = PRED_DIR / f"deep_{c}.parquet", MODELS / f"deep_{c}.joblib"
-        key = f"{target}_{h}h"
-        if f.exists() and b.exists() and key in pq.read_schema(f).names:
-            d = pd.read_parquet(f, columns=[key, key + "_raw"])
-            pred[c] = d[key].reindex(pred.index)
-            pred[c + "_raw"] = d[key + "_raw"].reindex(pred.index)
-            thr[c] = joblib.load(b)["thresholds"][key]
-    return pred, thr
 
 
 # ============================================================================ bootstrap
@@ -109,7 +88,7 @@ def ci(x):
 # ============================================================================ main blocks
 def score_table(pred, thr, y, mask, clim, persistence, extra_det=None):
     rows = []
-    for m in [c for c in TAB + DEEP if c in pred]:
+    for m in [c for c in ML if c in pred]:
         p = pred[m].to_numpy()[mask]
         ok = ~np.isnan(p)
         ps = probabilistic_scores(y[ok], p[ok], clim[ok])
@@ -148,7 +127,7 @@ def onset_dissipation(feats, pred_by_h, thr_by_h, split_name="test"):
             sub = sub[keep]
             want = 1 if kind == "onset" else 0
             row = {"event": kind, "h": h, "n_events": int(keep.sum())}
-            for m in [c for c in TAB + DEEP if c in sub]:
+            for m in [c for c in ML if c in sub]:
                 yhat = (sub[m] >= thr_by_h[h][m]).astype(int)
                 row[m] = float((yhat == want).mean())
             pers = feats["fog_now"].reindex(sub.index)
@@ -165,7 +144,7 @@ def main() -> None:
     all_rows, boot_rows, paired_rows, trend_rows, taf_rows, season_rows = [], [], [], [], [], []
     rvr_rows, lead_rows = [], []
     pred_fog_by_h, thr_fog_by_h = {}, {}
-    summary = {}
+    summary, rule_params = {}, {}
 
     horizons = [h for h in HORIZONS_ALL if (PRED_DIR / f"pred_fog_{h}h.parquet").exists()]
     for target in ("fog", "rvr550", "rvr350"):
@@ -194,6 +173,10 @@ def main() -> None:
                 tafs = taf_forecasts(idx, h, taf_arch)
                 extra["taf_prev"] = vis_to_event(tafs["taf_vis_prev"])
                 extra["taf_worst"] = vis_to_event(tafs["taf_vis_worst"])
+                Xh = feature_matrix(None, h, base=feats).reindex(idx)
+                rule = tune_expert_rule(Xh, y_all, split == "val")
+                extra["expert_rule"] = expert_rule(Xh, **rule)
+                rule_params[f"{h}h"] = rule
             if target == "fog":
                 pred_fog_by_h[h], thr_fog_by_h[h] = pred, thr
             cold = np.isin(idx.month, COLD_SEASON_MONTHS)
@@ -224,19 +207,21 @@ def main() -> None:
             yt = y_all[m].astype(int)
             days = _day_codes(idx[m])
             dets = {mm: (pred[mm].to_numpy()[m] >= thr[mm]).astype(int)
-                    for mm in TAB + DEEP if mm in pred}
+                    for mm in ML if mm in pred}
             dets["persistence"] = np.nan_to_num(pers[m]).astype(int)
+            if "expert_rule" in extra:
+                dets["expert_rule"] = np.nan_to_num(extra["expert_rule"][m]).astype(int)
             bs = bootstrap_categorical(dets, yt, days)
             for name, d in bs.items():
                 row = {"target": target, "h": h, "model": name}
                 for k, v in d.items():
                     row[f"{k}_lo"], row[f"{k}_hi"] = ci(v)
-                if name in TAB + DEEP and target == "fog":
+                if name in ML and target == "fog":
                     aps, bsss = bootstrap_prob(yt, pred[name].to_numpy()[m], clim_all[m], days)
                     row["PR_AUC_lo"], row["PR_AUC_hi"] = ci(aps)
                     row["BSS_lo"], row["BSS_hi"] = ci(bsss)
                 boot_rows.append(row)
-            for mm in [c for c in TAB + DEEP if c in pred]:
+            for mm in [c for c in ML if c in pred]:
                 for metric in ("CSI", "HSS"):
                     diff = bs[mm][metric] - bs["persistence"][metric]
                     lo, hi = ci(diff)
@@ -256,7 +241,7 @@ def main() -> None:
                     yy = y_all[sel]
                     base = {"target": target, "h": h, "split": part, "n": int(sel.sum()),
                             "events": int(yy.sum())}
-                    for name in [c for c in TAB + DEEP if c in pred]:
+                    for name in [c for c in ML if c in pred]:
                         rows_out.append({**base, "forecast": name, **categorical_scores(
                             yy, pred[name].to_numpy()[sel] >= thr[name])})
                     rows_out.append({**base, "forecast": "persistence",
@@ -289,11 +274,14 @@ def main() -> None:
                     continue
                 row = {"target": target, "h": h, "season": f"{s}/{str(s + 1)[2:]}",
                        "events": int(y_all[sel].sum())}
-                for name in [c for c in TAB + DEEP if c in pred]:
+                for name in [c for c in ML if c in pred]:
                     row[f"{name}_CSI"] = categorical_scores(
                         y_all[sel], pred[name].to_numpy()[sel] >= thr[name])["CSI"]
                     row[f"{name}_PRAUC"] = average_precision_score(y_all[sel], pred[name].to_numpy()[sel])
                 row["persistence_CSI"] = categorical_scores(y_all[sel], pers[sel] == 1)["CSI"]
+                if "expert_rule" in extra:
+                    row["expert_rule_CSI"] = categorical_scores(
+                        y_all[sel], extra["expert_rule"][sel] == 1)["CSI"]
                 season_rows.append(row)
 
     # ------------------------------------------------------------------ RVR multi-class
@@ -316,7 +304,7 @@ def main() -> None:
         pers_cls = np.where(r < RVR_CAT_II_M, 2, np.where(r < RVR_CAT_I_M, 1, 0))
         for part in ("val", "test"):
             sel = split == part
-            for name in [c for c in TAB + DEEP if c in p550 and c in p350]:
+            for name in [c for c in ML if c in p550 and c in p350]:
                 probs = rvr_class_probs(p550[name].to_numpy()[sel], p350[name].to_numpy()[sel])
                 yhat = np.where(p350[name].to_numpy()[sel] >= t350[name], 2,
                                 np.where(p550[name].to_numpy()[sel] >= t550[name], 1, 0))
@@ -348,6 +336,7 @@ def main() -> None:
                                .to_dict(orient="records"))
     summary["n_taf"] = len(taf_arch.tafs)
     (RESULTS / "metrics.json").write_text(json.dumps(summary, indent=2, default=float))
+    (TABLES / "expert_rule.json").write_text(json.dumps(rule_params, indent=2))
     cols = ["target", "h", "model", "PR_AUC", "ROC_AUC", "Brier", "BSS", "POD", "FAR", "CSI", "HSS"]
     view = sc[(sc.split == "test") & (sc.season == "all")][cols]
     with pd.option_context("display.width", 200):

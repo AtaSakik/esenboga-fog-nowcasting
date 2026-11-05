@@ -18,18 +18,39 @@ from esenboga.config import HORIZONS, MODELS, PROCESSED, TABLES  # noqa: E402
 from esenboga.labels import FEATURE_GROUPS  # noqa: E402
 
 NAMES = {
-    "en": {"lr": "Logistic regression", "rf": "Random forest", "xgb": "XGBoost",
-           "lgbm": "LightGBM", "gru": "GRU", "lstm": "LSTM", "persistence": "Persistence",
+    "en": {"lr": "Logistic regression", "knn": "Analog (k-NN)", "rf": "Random forest",
+           "xgb": "XGBoost", "lgbm": "LightGBM", "cat": "CatBoost", "ebm": "EBM", "mlp": "MLP",
+           "gru": "GRU", "lstm": "LSTM", "tcn": "TCN", "transformer": "Transformer",
+           "ens": "Ensemble", "persistence": "Persistence", "expert_rule": "Forecaster's rule",
+           "trend": "TREND (prevailing)",
            "trend_prev": "TREND (prevailing)", "trend_worst": "TREND (worst case)",
            "taf_prev": "TAF (prevailing)", "taf_worst": "TAF (worst case)",
            "climatology": "Climatology"},
-    "tr": {"lr": "Lojistik regresyon", "rf": "Rastgele orman", "xgb": "XGBoost",
-           "lgbm": "LightGBM", "gru": "GRU", "lstm": "LSTM", "persistence": "Kalıcılık",
+    "tr": {"lr": "Lojistik regresyon", "knn": "Analog (k-NN)", "rf": "Rastgele orman",
+           "xgb": "XGBoost", "lgbm": "LightGBM", "cat": "CatBoost", "ebm": "EBM", "mlp": "MLP",
+           "gru": "GRU", "lstm": "LSTM", "tcn": "TCN", "transformer": "Transformer",
+           "ens": "Topluluk", "persistence": "Kalıcılık", "expert_rule": "Tahminci kuralı",
+           "trend": "TREND (hâkim)",
            "trend_prev": "TREND (hâkim)", "trend_worst": "TREND (en kötü)",
            "taf_prev": "TAF (hâkim)", "taf_worst": "TAF (en kötü)",
            "climatology": "Klimatoloji"},
 }
-ML = ["lr", "rf", "xgb", "lgbm", "gru", "lstm"]
+ML = ["lr", "knn", "rf", "xgb", "lgbm", "cat", "ebm", "mlp", "gru", "lstm", "tcn", "transformer",
+      "ens"]
+
+
+def champions() -> list[str]:
+    """Best technique (lowest mean benchmark rank) of every family, best family first."""
+    lb = pd.read_csv(TABLES / "benchmark_leaderboard.csv")
+    ml = lb[lb.family != "reference"]
+    rank = ml.groupby(["family", "model"]).mean_rank.mean().reset_index()
+    best = rank.sort_values("mean_rank").groupby("family").head(1)
+    return best.sort_values("mean_rank").model.tolist()
+
+
+def leaders() -> list[str]:
+    """The overall best technique and the operational LightGBM model."""
+    return list(dict.fromkeys([champions()[0], "lgbm"]))
 
 
 def L(lang, en, tr):
@@ -151,7 +172,7 @@ def main_results(lang, target="fog", split="test", season="all"):
     for h in HORIZONS:
         block = []
         d = sc[sc.h == h]
-        for m in ML + ["persistence", "trend_prev", "trend_worst"]:
+        for m in champions() + ["persistence", "expert_rule", "trend_prev", "trend_worst"]:
             r = d[d.model == m]
             if not len(r):
                 continue
@@ -188,21 +209,21 @@ def bootstrap_ci(lang):
     rows = []
     for h in HORIZONS:
         shown = False
-        for m in ("lgbm", "gru", "persistence"):
+        for m in leaders() + ["persistence", "expert_rule"]:
             b = bs[(bs.target == "fog") & (bs.h == h) & (bs.model == m)]
             s = sc[(sc.target == "fog") & (sc.h == h) & (sc.model == m) & (sc.split == "test") & (sc.season == "all")]
             if not len(b) or not len(s):
                 continue
             b, s = b.iloc[0], s.iloc[0]
             sig = ""
-            if m != "persistence":
+            if m not in ("persistence", "expert_rule"):
                 p = pt[(pt.target == "fog") & (pt.h == h) & (pt.model == m) & (pt.vs == "persistence") & (pt.metric == "CSI")]
                 if len(p) and bool(p.significant.iloc[0]):
                     sig = "*" if p.diff_mean.iloc[0] > 0 else "−"
             rows.append([("" if shown else (f"{h} h" if lang == "en" else f"{h} sa")), NAMES[lang][m],
                          f"{f(s.CSI, 2)}{sig} [{f(b.CSI_lo, 2)}, {f(b.CSI_hi, 2)}]",
                          f"{f(s.HSS, 2)} [{f(b.HSS_lo, 2)}, {f(b.HSS_hi, 2)}]",
-                         (f"{f(s.PR_AUC, 2)} [{f(b.PR_AUC_lo, 2)}, {f(b.PR_AUC_hi, 2)}]" if m != "persistence" else "–")])
+                         (f"{f(s.PR_AUC, 2)} [{f(b.PR_AUC_lo, 2)}, {f(b.PR_AUC_hi, 2)}]" if m in ML else "–")])
             shown = True
     return {"title": L(lang, "95% day-block bootstrap confidence intervals (test seasons)",
                        "%95 gün-blok bootstrap güven aralıkları (test sezonları)"),
@@ -218,7 +239,7 @@ def trend_table(lang):
     rows = []
     for h in sorted(tr.h.unique()):
         block = []
-        for m in ("lgbm", "gru", "persistence", "trend_prev", "trend_worst"):
+        for m in leaders() + ["persistence", "trend_prev", "trend_worst"]:
             r = tr[(tr.h == h) & (tr.forecast == m)]
             if not len(r):
                 continue
@@ -248,7 +269,7 @@ def taf_table(lang):
             part = "test" if (d.split == "test").any() else "live"
             d = d[d.split == part]
             block = []
-            for m in ("lgbm", "gru", "persistence", "taf_prev", "taf_worst"):
+            for m in leaders() + ["persistence", "taf_prev", "taf_worst"]:
                 r = d[d.forecast == m]
                 if len(r):
                     r = r.iloc[0]
@@ -278,12 +299,12 @@ def rvr_table(lang):
     rows, cols = [], ["RPSS", "macro_F1", "HSS_multi", "CSI_ge1", "CSI_ge2"]
     for h in HORIZONS:
         block = []
-        for m in ("lr", "rf", "xgb", "lgbm", "gru", "lstm", "persistence"):
+        for m in champions() + ["persistence"]:
             r = rv[(rv.h == h) & (rv.model == m)]
             if not len(r):
                 continue
             r = r.iloc[0]
-            block.append({"h": f"{h} h" if lang == "en" else f"{h} sa", "m": SHORT[lang][m],
+            block.append({"h": f"{h} h" if lang == "en" else f"{h} sa", "m": SHORT[lang].get(m, NAMES[lang][m]),
                           **{c: f(r[c]) for c in cols}})
         block = _bold_best(block, cols, [True, True, True, True, True])
         for k, b in enumerate(block):
@@ -325,12 +346,18 @@ def imbalance(lang):
 def per_season(lang):
     d = pd.read_csv(TABLES / "per_season.csv")
     d = d[(d.target == "fog") & (d.h == 3)]
-    rows = [[r.season, num(r.events), f(r.lgbm_CSI), f(r.gru_CSI) if "gru_CSI" in d else "–",
-             f(r.persistence_CSI), f(r.lgbm_PRAUC)] for r in d.itertuples()]
+    lead = leaders()
+    rows = [[r["season"], num(r["events"])] + [f(r[f"{m}_CSI"]) for m in lead]
+            + [f(r.get("expert_rule_CSI", np.nan)), f(r["persistence_CSI"]), f(r[f"{lead[0]}_PRAUC"])]
+            for _, r in d.iterrows()]
+    short = {"en": {"persistence": "persist.", "expert_rule": "rule"},
+             "tr": {"persistence": "kalıcılık", "expert_rule": "kural"}}[lang]
     return {"title": L(lang, "Season-by-season skill at 3 h (test)", "3 sa için sezon bazında beceri (test)"),
-            "header": [[L(lang, "Season", "Sezon"), L(lang, "Fog slots", "Sis dilimi"), "CSI LightGBM",
-                        "CSI GRU", L(lang, "CSI persist.", "CSI kalıcılık"), "PR-AUC LightGBM"]],
-            "rows": rows, "widths": [0.65, 0.6, 0.7, 0.6, 0.7, 0.8], "left_cols": 1}
+            "header": [[L(lang, "Season", "Sezon"), L(lang, "Fog slots", "Sis dilimi")]
+                       + [f"CSI {NAMES[lang][m]}" for m in lead]
+                       + [f"CSI {short['expert_rule']}", f"CSI {short['persistence']}",
+                          f"PR-AUC {NAMES[lang][lead[0]]}"]],
+            "rows": rows, "widths": [0.6, 0.5] + [0.65] * len(lead) + [0.5, 0.6, 0.7], "left_cols": 1}
 
 
 def hyperparams(lang):
@@ -342,12 +369,26 @@ def hyperparams(lang):
         if model == "lgbm":
             s = (f"η={p['learning_rate']:.3f}, leaves={p['num_leaves']}, min_child={p['min_child_samples']}, "
                  f"ff={p['feature_fraction']:.2f}, bf={p['bagging_fraction']:.2f}, λ₂={p['lambda_l2']:.3g}")
+        elif model == "cat":
+            s = (f"η={p['learning_rate']:.3f}, depth={p['depth']}, l2={p['l2_leaf_reg']:.2f}, "
+                 f"random strength={p['random_strength']:.2f}, bagging T={p['bagging_temperature']:.2f}")
         else:
             s = (f"η={p['learning_rate']:.3f}, depth={p['max_depth']}, mcw={p['min_child_weight']:.1f}, "
                  f"subsample={p['subsample']:.2f}, colsample={p['colsample_bytree']:.2f}, λ={p['reg_lambda']:.3g}")
         rows.append([NAMES[lang][model], h.replace("h", " h" if lang == "en" else " sa"), s])
-    import joblib  # bundles are produced by our own training script
-    for cell in ("gru", "lstm"):
+    import joblib  # model files are produced by our own training scripts
+    for m in ("knn", "ebm", "mlp"):
+        cfg = []
+        for h in HORIZONS:
+            pth = MODELS / f"tab_{m}_fog_{h}h.joblib"
+            if pth.exists():
+                p = joblib.load(pth).params
+                cfg.append(f"{h}: k={p['k']}" if m == "knn" else
+                           f"{h}: interactions={p['interactions']}, η={p['learning_rate']}" if m == "ebm" else
+                           f"{h}: {p['layers']}×{p['hidden']}, dropout={p['dropout']}, lr={p['lr']:g}")
+        if cfg:
+            rows.append([NAMES[lang][m], "1/3/6", "; ".join(cfg)])
+    for cell in ("gru", "lstm", "tcn", "transformer"):
         pth = MODELS / f"deep_{cell}.joblib"
         if pth.exists():
             c = joblib.load(pth)["config"]
@@ -384,10 +425,88 @@ def live(lang):
                        "düzeltmeler dahil) hesaplanan tahminler.")}
 
 
+FAMILY = {"en": {"linear": "linear", "analog": "analog", "trees": "trees", "glass-box": "glass box",
+                 "neural": "neural", "ensemble": "ensemble", "reference": "reference"},
+          "tr": {"linear": "doğrusal", "analog": "analog", "trees": "ağaç", "glass-box": "cam kutu",
+                 "neural": "sinir ağı", "ensemble": "topluluk", "reference": "referans"}}
+
+
+def benchmark(lang):
+    """Leaderboard of the thirteen techniques (test seasons, fog), best first."""
+    lb = pd.read_csv(TABLES / "benchmark_leaderboard.csv")
+    pw = pd.read_csv(TABLES / "benchmark_pairwise.csv")
+    ml = lb[lb.family != "reference"]
+    order = ml.groupby("model").mean_rank.mean().sort_values().index.tolist()
+    refs = [r for r in ("trend", "expert_rule", "persistence") if r in set(lb.model)]
+    rows = []
+    for m in order + refs:
+        d = lb[lb.model == m].set_index("h")
+        row = {"m": NAMES[lang][m], "fam": FAMILY[lang][d.family.iloc[0]]}
+        for h in HORIZONS:
+            for metric in ("PR_AUC", "CSI"):
+                v = d[metric].get(h, np.nan)
+                worse = pw[(pw.h == h) & (pw.model == m) & (pw.metric == metric) & pw.significant
+                           & (pw.diff_mean < 0)]
+                row[f"{metric}{h}"] = f(v) + ("†" if len(worse) else "") if m in order else (
+                    "–" if metric == "PR_AUC" else f(v))
+        row["rank"] = f(ml[ml.model == m].mean_rank.mean(), 1) if m in order else "–"
+        rows.append(row)
+    cols = [f"{metric}{h}" for metric in ("PR_AUC", "CSI") for h in HORIZONS]
+    for c in cols:                       # bold the best technique(s) of each column
+        vals = np.array([float(r[c].rstrip("†")) if r[c] != "–" else np.nan for r in rows[:len(order)]])
+        for k in np.flatnonzero(np.isclose(vals, np.nanmax(vals))):
+            rows[k][c] = f"**{rows[k][c]}**"
+    hl = "h" if lang == "en" else "sa"
+    return {"title": L(lang, "Benchmark of the thirteen techniques on the test seasons 2022/23–2025/26 (fog, VIS < 1000 m)",
+                       "On üç tekniğin 2022/23–2025/26 test sezonlarında karşılaştırılması (sis, görüş < 1000 m)"),
+            "header": [[L(lang, "Technique", "Teknik"), L(lang, "Family", "Aile")]
+                       + [f"PR-AUC {h} {hl}" for h in HORIZONS] + [f"CSI {h} {hl}" for h in HORIZONS]
+                       + [L(lang, "Mean rank", "Ort. sıra")]],
+            "rows": [[r["m"], r["fam"]] + [r[c] for c in cols] + [r["rank"]] for r in rows],
+            "widths": [1.15, 0.75, 0.6, 0.6, 0.6, 0.55, 0.55, 0.55, 0.6], "left_cols": 2,
+            "rules": [len(order)],
+            "notes": L(lang, "Rows sorted by the mean rank over PR-AUC, BSS, CSI, HSS and SEDI at 1, 3 and 6 h. Best "
+                             "technique per column in bold; † significantly worse than the best technique of that lead "
+                             "time (paired day-block bootstrap, 1000 resamples, Holm-adjusted p < 0.05). Reference "
+                             "forecasts are deterministic, so PR-AUC is not defined; TREND only up to 2 h.",
+                       "Satırlar 1, 3 ve 6 saatte PR-AUC, BSS, CSI, HSS ve SEDI üzerindeki ortalama sıraya göre "
+                       "dizilmiştir. Her sütunun en iyi tekniği kalın yazılmıştır; † o öngörü süresinin en iyi "
+                       "tekniğinden anlamlı olarak kötü (eşleştirilmiş gün-blok bootstrap, 1000 yineleme, Holm "
+                       "düzeltmeli p < 0,05). Referans tahminler deterministik olduğundan PR-AUC tanımsızdır; TREND "
+                       "yalnızca 2 saate kadardır.")}
+
+
+def cost(lang):
+    """Computational cost and explainability of the techniques."""
+    c = pd.read_csv(TABLES / "benchmark_cost.csv")
+    expl_tr = {"coefficients (built in)": "katsayılar (yapısında)",
+               "the past analog cases (built in)": "benzer geçmiş durumlar (yapısında)",
+               "per-feature shape functions (built in)": "öznitelik şekil fonksiyonları (yapısında)",
+               "SHAP (post hoc)": "SHAP (sonradan)", "post hoc only": "yalnız sonradan",
+               "via its members": "üyeleri üzerinden"}
+    rows = []
+    for r in c.itertuples():
+        pred = getattr(r, "predict_ms_per_10k", np.nan)
+        rows.append([NAMES[lang][r.model], f(r.fit_s, 0) if pd.notna(r.fit_s) else "–",
+                     f(pred, 0) if pd.notna(pred) else "–", f(r.size_mb, 1),
+                     r.explanation if lang == "en" else expl_tr.get(r.explanation, r.explanation)])
+    return {"title": L(lang, "Computational cost and explainability", "Hesaplama maliyeti ve açıklanabilirlik"),
+            "header": [[L(lang, "Technique", "Teknik"), L(lang, "Fit (s)", "Eğitim (sn)"),
+                        L(lang, "Predict (ms/10k)", "Tahmin (ms/10 bin)"), L(lang, "Size (MB)", "Boyut (MB)"),
+                        L(lang, "Explanation", "Açıklama")]],
+            "rows": rows, "widths": [1.0, 0.55, 0.7, 0.55, 1.6], "left_cols": 1,
+            "notes": L(lang, "Fit: one fit of the selected configuration (fog, 3 h; the sequence networks fit all nine "
+                             "tasks at once) on a laptop with an 8-GB GPU; the hyper-parameter search is not included. "
+                             "Predict: 10 000 test rows on the same machine.",
+                       "Eğitim: seçilen yapılandırmanın tek eğitimi (sis, 3 sa; dizi ağları dokuz görevi birlikte "
+                       "eğitir), 8 GB grafik işlemcili bir dizüstü bilgisayarda; hiperparametre araması dahil değildir. "
+                       "Tahmin: aynı bilgisayarda 10 000 test satırı.")}
+
+
 BUILDERS = {"data_summary": data_summary, "splits": splits, "features": features,
             "main_results": main_results, "bootstrap_ci": bootstrap_ci, "trend": trend_table,
             "taf": taf_table, "rvr": rvr_table, "imbalance": imbalance, "per_season": per_season,
-            "hyperparams": hyperparams, "live": live}
+            "hyperparams": hyperparams, "live": live, "benchmark": benchmark, "cost": cost}
 
 
 def build(key: str, lang: str) -> dict:

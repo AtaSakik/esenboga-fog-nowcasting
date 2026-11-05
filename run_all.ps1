@@ -10,11 +10,15 @@ if (-not (Test-Path $py)) { $py = "python" }
 & $py scripts/01_prepare_data.py          # decode, QC, grid, features, targets
 & $py -m pytest tests -q                  # parser, TAF, solar geometry, leakage tests
 & $py scripts/04_imbalance_ablation.py    # class-imbalance strategies (fog, 3 h)
-& $py scripts/02_train_tabular.py         # LR, RF, XGBoost, LightGBM (1/3/6 h, 3 targets)
+& $py scripts/02_train_tabular.py --models lr knn rf xgb lgbm cat mlp   # 1/3/6 h, 3 targets
+& $py scripts/02_train_tabular.py --models ebm --targets fog            # explainable boosting (fog)
 & $py scripts/02_train_tabular.py --horizons 2 4 5 --targets fog --models lgbm --trials 15
-& $py scripts/03_train_deep.py            # multi-task GRU / LSTM
-& $py scripts/05_evaluate.py              # verification, bootstrap, TREND/TAF comparison
+& $py scripts/03_train_deep.py            # multi-task GRU / LSTM / TCN / Transformer
+& $py scripts/09_ensemble.py              # greedy ensemble of all trained models
+& $py scripts/05_evaluate.py              # verification, bootstrap, rule of thumb, TREND/TAF comparison
+& $py scripts/10_benchmark.py             # leaderboard, Holm tests, economic value, cost
 & $py scripts/06_shap.py                  # explainability
 & $py scripts/07_figures.py               # figures (EN/TR)
 & $py scripts/08_operational_replay.py    # operational period + parity check
 & $py report/build_paper.py               # IEEE manuscript (EN/TR, DOCX + PDF)
+& $py report/build_docs.py                # TÜBİTAK 2209-A proposal draft + plain-language summary

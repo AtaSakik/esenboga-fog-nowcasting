@@ -12,26 +12,20 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from matplotlib.patches import FancyArrowPatch, FancyBboxPatch
+from matplotlib.ticker import FormatStrFormatter, NullFormatter
 from sklearn.metrics import precision_recall_curve
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
-from esenboga.config import HORIZONS, PROCESSED, RESULTS, TABLES  # noqa: E402
+from esenboga.benchmark import load_task  # noqa: E402
+from esenboga.config import HORIZONS, PROCESSED, TABLES  # noqa: E402
 from esenboga.plots import (COL_W, MODEL_COLORS, PAGE_W, T, mlabel, save,  # noqa: E402
                             setup_style)
-
-PRED = RESULTS / "predictions"
-ML = ["lr", "rf", "xgb", "lgbm", "gru", "lstm"]
 MONTHS = {"en": ["J", "F", "M", "A", "M", "J", "J", "A", "S", "O", "N", "D"],
           "tr": ["O", "Ş", "M", "N", "M", "H", "T", "A", "E", "E", "K", "A"]}
 
 
 def load_pred(target: str, h: int) -> pd.DataFrame:
-    pred = pd.read_parquet(PRED / f"pred_{target}_{h}h.parquet")
-    for c in ("gru", "lstm"):
-        f = PRED / f"deep_{c}.parquet"
-        if f.exists():
-            pred[c] = pd.read_parquet(f, columns=[f"{target}_{h}h"])[f"{target}_{h}h"].reindex(pred.index)
-    return pred
+    return load_task(target, h)[0]
 
 
 # ============================================================================ figures
@@ -90,7 +84,7 @@ def fig_pr_curves(lang):
         pred = load_pred("fog", h)
         te = pred[pred.split == "test"]
         y = te["y"].to_numpy()
-        for mname in ML:
+        for mname in family_champions():
             if mname not in te:
                 continue
             p = te[mname].to_numpy()
@@ -120,7 +114,7 @@ def fig_pr_curves(lang):
 
 
 def fig_reliability(lang):
-    """Single-panel reliability diagram: LightGBM (solid) and GRU (dashed) at 1, 3, 6 h."""
+    """Single-panel reliability diagram of the two best techniques (solid, dashed) at 1, 3, 6 h."""
     fig, ax = plt.subplots(figsize=(COL_W, 2.55))
     ax.plot([0, 1], [0, 1], color="0.6", lw=0.8, ls=":")
     colors = {1: "#1f77b4", 3: "#9467bd", 6: "#2ca02c"}
@@ -129,7 +123,7 @@ def fig_reliability(lang):
         pred = load_pred("fog", h)
         te = pred[pred.split == "test"]
         y = te["y"].to_numpy()
-        for mname, ls in (("lgbm", "-"), ("gru", "--")):
+        for mname, ls in zip(family_champions()[:2], ("-", "--")):
             if mname not in te:
                 continue
             p = te[mname].to_numpy()
@@ -186,7 +180,7 @@ def fig_leadtime(lang):
 def fig_onset(lang):
     od = pd.read_csv(TABLES / "onset_dissipation.csv")
     fig, axes = plt.subplots(1, 2, figsize=(COL_W * 1.45, 2.0), sharey=True)
-    names = [n for n in ("persistence", "lr", "rf", "xgb", "lgbm", "gru", "lstm") if n in od]
+    names = [n for n in ["persistence"] + family_champions() if n in od]
     for ax, ev in zip(axes, ("onset", "dissipation")):
         d = od[od.event == ev].sort_values("h")
         w = 0.8 / len(names)
@@ -275,6 +269,186 @@ def fig_rvr_confusion(lang):
     return save(fig, "rvr_confusion", lang)
 
 
+def family_champions() -> list[str]:
+    """Best model (lowest mean benchmark rank) of every family, best family first."""
+    lb = pd.read_csv(TABLES / "benchmark_leaderboard.csv")
+    ml = lb[lb.family != "reference"]
+    rank = ml.groupby(["family", "model"]).mean_rank.mean().reset_index()
+    best = rank.sort_values("mean_rank").groupby("family").head(1)
+    return best.sort_values("mean_rank").model.tolist()
+
+
+def fig_benchmark(lang):
+    """Test scores of every technique and reference forecast, coloured by rank per lead time."""
+    lb = pd.read_csv(TABLES / "benchmark_leaderboard.csv")
+    ml = lb[lb.family != "reference"]
+    rows = ml.groupby("model").mean_rank.mean().sort_values().index.tolist()
+    n_ml = len(rows)
+    rows += [r for r in ("trend", "expert_rule", "persistence") if r in set(lb.model)]
+    fig, axes = plt.subplots(1, 3, figsize=(PAGE_W, 0.17 * len(rows) + 0.75), sharey=True)
+    for ax, metric in zip(axes, ("PR_AUC", "CSI", "SEDI")):
+        M = np.full((len(rows), len(HORIZONS)), np.nan)
+        for i, m in enumerate(rows):
+            for j, h in enumerate(HORIZONS):
+                v = lb[(lb.model == m) & (lb.h == h)][metric]
+                if len(v):
+                    M[i, j] = v.iloc[0]
+        lo, hi = np.nanmin(M, axis=0), np.nanmax(M, axis=0)
+        C = (M - lo) / np.where(hi > lo, hi - lo, 1)          # colour = position within the column
+        ax.imshow(np.ma.masked_invalid(C), aspect="auto", cmap="YlGnBu", vmin=-0.15, vmax=1.15)
+        for i in range(len(rows)):
+            for j in range(len(HORIZONS)):
+                if np.isnan(M[i, j]):
+                    ax.text(j, i, "–", ha="center", va="center", fontsize=6, color="0.5")
+                    continue
+                top = M[i, j] == np.nanmax(M[:n_ml, j])
+                ax.text(j, i, f"{M[i, j]:.3f}", ha="center", va="center", fontsize=5.8,
+                        fontweight="bold" if top else "normal",
+                        color="white" if C[i, j] > 0.7 else "black")
+        ax.axhline(n_ml - 0.5, color="k", lw=0.8)
+        ax.set_xticks(range(len(HORIZONS)))
+        ax.set_xticklabels([f"{h} {'h' if lang == 'en' else 'sa'}" for h in HORIZONS])
+        ax.set_title(metric.replace("_", "-"))
+        ax.tick_params(length=0)
+        for s in ax.spines.values():
+            s.set_visible(False)
+    axes[0].set_yticks(range(len(rows)))
+    axes[0].set_yticklabels([mlabel(m, lang) for m in rows])
+    fig.tight_layout()
+    return save(fig, "benchmark", lang)
+
+
+def fig_value(lang):
+    """Relative economic value (Richardson 2000) against the user's cost/loss ratio."""
+    ev = pd.read_csv(TABLES / "economic_value.csv")
+    show = family_champions() + ["trend", "expert_rule", "persistence"]
+    fig, axes = plt.subplots(1, 3, figsize=(PAGE_W, 2.25), sharey=True)
+    for ax, h in zip(axes, HORIZONS):
+        for m in show:
+            d = ev[(ev.h == h) & (ev.model == m)].sort_values("alpha")
+            if not len(d):
+                continue
+            ref = m in ("trend", "expert_rule", "persistence")
+            ax.plot(d.alpha, d.V.clip(lower=-0.1), ls="--" if ref else "-", lw=0.9 if ref else 1.1,
+                    color=MODEL_COLORS[m], label=mlabel(m, lang))
+        ax.set_xscale("log")
+        ax.set_xlim(0.01, 0.95)
+        ax.set_ylim(-0.05, 1.0)
+        ax.set_xticks([0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 0.9])
+        ax.xaxis.set_major_formatter(FormatStrFormatter("%g"))
+        ax.xaxis.set_minor_formatter(NullFormatter())
+        ax.grid(True, which="major")
+        ax.set_title(T(lang, f"Lead time {h} h", f"Öngörü süresi {h} sa"))
+        ax.set_xlabel(T(lang, "Cost/loss ratio C/L", "Maliyet/kayıp oranı C/L"))
+    axes[0].set_ylabel(T(lang, "Relative economic value", "Göreli ekonomik değer"))
+    handles, labels = axes[0].get_legend_handles_labels()        # the 1-h panel includes TREND
+    axes[-1].legend(handles, labels, fontsize=5.5, frameon=True, framealpha=0.9, edgecolor="none",
+                    loc="upper right")
+    fig.tight_layout()
+    return save(fig, "economic_value", lang)
+
+
+def fig_tradeoff(lang):
+    """Skill against transparency: how each technique explains itself vs its mean test PR-AUC."""
+    lb = pd.read_csv(TABLES / "benchmark_leaderboard.csv")
+    cost = pd.read_csv(TABLES / "benchmark_cost.csv").set_index("model")
+    ml = lb[lb.family != "reference"].groupby("model").PR_AUC.mean()
+    level = {"lr": 2, "knn": 2, "ebm": 2, "rf": 1, "xgb": 1, "lgbm": 1, "cat": 1,
+             "mlp": 0, "gru": 0, "lstm": 0, "tcn": 0, "transformer": 0, "ens": 0}
+    fig, ax = plt.subplots(figsize=(COL_W, 2.6))
+    for lev in (0, 1, 2):
+        # within a column, neighbours in skill alternate left/right so that labels never collide
+        group = ml[[m for m in ml.index if level[m] == lev]].sort_values(ascending=False)
+        for k, (m, v) in enumerate(group.items()):
+            side = 1 if k % 2 == 0 else -1
+            x = lev + side * 0.12
+            secs = cost.fit_s.get(m, np.nan) if "fit_s" in cost else np.nan
+            size = 14 + 10 * np.log10(max(secs, 1)) if np.isfinite(secs) else 18
+            ax.scatter(x, v, s=size, color=MODEL_COLORS[m], edgecolor="k", lw=0.4, zorder=3)
+            ax.annotate(mlabel(m, lang), (x, v), xytext=(4 * side, 0), textcoords="offset points",
+                        fontsize=5.6, va="center", ha="left" if side > 0 else "right")
+    ax.set_xticks([0, 1, 2])
+    ax.set_xticklabels([T(lang, "post hoc only", "yalnız sonradan"),
+                        T(lang, "SHAP (exact for trees)", "SHAP (ağaçlarda kesin)"),
+                        T(lang, "built in", "yapısında")], fontsize=6.3)
+    ax.set_xlim(-0.75, 2.95)
+    ax.set_xlabel(T(lang, "How the forecast can be explained", "Tahminin nasıl açıklanabildiği"))
+    ax.set_ylabel(T(lang, "Mean test PR-AUC (1, 3, 6 h)", "Ortalama test PR-AUC (1, 3, 6 sa)"))
+    ax.grid(True, axis="y")
+    fig.tight_layout()
+    return save(fig, "tradeoff", lang)
+
+
+def fig_plain(lang):
+    """Plain-language figure: out of 100 fogs, how many were forecast; out of 100 warnings,
+    how many came true - for the simple rules and the best technique."""
+    lb = pd.read_csv(TABLES / "benchmark_leaderboard.csv")
+    best = family_champions()[0]
+    names = [n for n in ("persistence", "expert_rule", best) if n in set(lb.model)]
+    labels = {"persistence": T(lang, "Fog now =\nfog later", "Şimdi sis varsa\nsonra da var"),
+              "expert_rule": T(lang, "Forecaster's\nrule of thumb", "Tahmincinin\npratik kuralı"),
+              best: T(lang, f"Machine learning\n({mlabel(best, lang)})",
+                      f"Makine öğrenmesi\n({mlabel(best, lang)})")}
+    fig, axes = plt.subplots(1, 2, figsize=(PAGE_W, 2.5), sharey=True)
+    for ax, metric, title in ((axes[0], "POD", T(lang, "Out of 100 fogs, how many were forecast?",
+                                                  "100 sisin kaçı önceden bilindi?")),
+                              (axes[1], "FAR", T(lang, "Out of 100 warnings, how many came true?",
+                                                  "100 uyarının kaçı doğru çıktı?"))):
+        w = 0.8 / len(names)
+        for k, n in enumerate(names):
+            d = lb[lb.model == n].set_index("h").reindex(HORIZONS)
+            vals = 100 * (d[metric] if metric == "POD" else 1 - d[metric])
+            xs = np.arange(len(HORIZONS)) + (k - len(names) / 2 + 0.5) * w
+            bars = ax.bar(xs, vals, width=w * 0.95, color=MODEL_COLORS[n], label=labels[n])
+            for b_, v in zip(bars, vals):
+                ax.text(b_.get_x() + b_.get_width() / 2, v + 1.5, f"{v:.0f}", ha="center",
+                        fontsize=7, fontweight="bold" if n == best else "normal")
+        ax.set_xticks(range(len(HORIZONS)))
+        ax.set_xticklabels([T(lang, f"{h} hour{'s' if h > 1 else ''} ahead", f"{h} saat önceden")
+                            for h in HORIZONS], fontsize=7.5)
+        ax.set_title(title, fontsize=8.5)
+        ax.set_ylim(0, 105)
+        ax.grid(True, axis="y")
+    handles, labels = axes[0].get_legend_handles_labels()
+    fig.legend(handles, [lb_.replace("\n", " ") for lb_ in labels], loc="upper center", ncol=3,
+               frameon=False, fontsize=7, bbox_to_anchor=(0.5, 1.06))
+    fig.tight_layout()
+    return save(fig, "plain_summary", lang)
+
+
+WORK_PACKAGES = [  # (en, tr, first month, last month); TÜBİTAK 2209-A: no separate steps for the
+    # literature review, reporting or dissemination
+    ("WP1 Data update, extension and QC", "İP1 Veri güncelleme, genişletme ve KK", 1, 2),
+    ("WP2 Benchmark of the techniques", "İP2 Yöntemlerin karşılaştırılması", 2, 6),
+    ("WP3 Explainability, calibration, value", "İP3 Açıklanabilirlik, kalibrasyon, değer", 5, 8),
+    ("WP4 Live early warning and verification", "İP4 Canlı erken uyarı ve doğrulama", 1, 12),
+    ("WP5 Other airports and NWP predictors", "İP5 Diğer havalimanları ve SHT verisi", 7, 11),
+]
+MILESTONES = [(2, "M1"), (6, "M2"), (8, "M3"), (12, "M4")]
+
+
+def fig_gantt(lang):
+    """Work plan of the project proposal (12 months)."""
+    fig, ax = plt.subplots(figsize=(PAGE_W, 2.1))
+    for k, (en, tr, a, b) in enumerate(WORK_PACKAGES):
+        y = len(WORK_PACKAGES) - 1 - k
+        ax.barh(y, b - a + 1, left=a - 0.5, height=0.55, color="#5b7a99" if k != 3 else "#7fae8e",
+                edgecolor="#13233a", lw=0.5)
+        ax.text(0.3, y, T(lang, en, tr), ha="right", va="center", fontsize=7)
+    for m, name in MILESTONES:
+        ax.plot(m + 0.5, -0.85, marker="v", color="#c8323f", ms=5)
+        ax.text(m + 0.5, -1.35, name, ha="center", va="top", fontsize=6.5, color="#c8323f")
+    ax.set_xlim(0.5, 12.9)
+    ax.set_ylim(-1.8, len(WORK_PACKAGES) - 0.4)
+    ax.set_xticks(range(1, 13))
+    ax.set_xlabel(T(lang, "Month", "Ay"))
+    ax.set_yticks([])
+    ax.grid(True, axis="x")
+    ax.spines["left"].set_visible(False)
+    fig.tight_layout()
+    return save(fig, "gantt", lang)
+
+
 def fig_architecture(lang):
     fig, ax = plt.subplots(figsize=(PAGE_W, 2.05))
     ax.set_xlim(0, 100)
@@ -287,8 +461,8 @@ def fig_architecture(lang):
                            "Çözücü + KK\ngörüş, RVR,\nhadise, TREND"), "#dbe4ec"),
         (37, 16, 15, 11, T(lang, "30-min grid\n77 features\n(state, trends,\nmemory, sun)",
                            "30 dk ızgara\n77 öznitelik\n(durum, eğilim,\nbellek, Güneş)"), "#dbe4ec"),
-        (55, 16, 17, 11, T(lang, "Models (1/3/6 h)\nLR, RF, XGBoost,\nLightGBM, GRU, LSTM\n+ calibration",
-                           "Modeller (1/3/6 sa)\nLR, RF, XGBoost,\nLightGBM, GRU, LSTM\n+ kalibrasyon"), "#f6e7a6"),
+        (55, 16, 17, 11, T(lang, "13 techniques (1/3/6 h)\nlinear, analog, trees,\nboosting, EBM, neural\nnets, ensemble",
+                           "13 teknik (1/3/6 sa)\ndoğrusal, analog, ağaç,\nartırma, EBM, sinir\nağları, topluluk"), "#f6e7a6"),
         (75, 16, 23, 11, T(lang, "Verification vs\npersistence, TREND, TAF\nPOD/FAR/CSI/HSS,\nBrier, PR-AUC, RPSS",
                            "Doğrulama:\nkalıcılık, TREND, TAF\nPOD/FAR/CSI/HSS,\nBrier, PR-AUC, RPSS"), "#dbe4ec"),
         (55, 1, 17, 11, T(lang, "SHAP explanations\n(TreeSHAP)", "SHAP açıklamaları\n(TreeSHAP)"), "#f6e7a6"),
@@ -314,7 +488,10 @@ def main() -> None:
         for fn in (lambda: fig_climatology(grid, lang), lambda: fig_pr_curves(lang),
                    lambda: fig_reliability(lang), lambda: fig_leadtime(lang),
                    lambda: fig_onset(lang), lambda: fig_case(grid, lang),
-                   lambda: fig_rvr_confusion(lang), lambda: fig_architecture(lang)):
+                   lambda: fig_rvr_confusion(lang), lambda: fig_architecture(lang),
+                   lambda: fig_benchmark(lang), lambda: fig_value(lang),
+                   lambda: fig_tradeoff(lang), lambda: fig_plain(lang),
+                   lambda: fig_gantt(lang)):
             try:
                 print("wrote", fn())
             except FileNotFoundError as exc:

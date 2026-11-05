@@ -1,0 +1,38 @@
+{
+  "1h": {
+    "dpd_max": 0.5,
+    "wind_max": 3,
+    "night_only": true,
+    "with_persistence": true
+  },
+  "2h": {
+    "dpd_max": 0.5,
+    "wind_max": 3,
+    "night_only": true,
+    "with_persistence": true
+  },
+  "3h": {
+    "dpd_max": 0.5,
+    "wind_max": 3,
+    "night_only": true,
+    "with_persistence": true
+  },
+  "4h": {
+    "dpd_max": 0.5,
+    "wind_max": 3,
+    "night_only": true,
+    "with_persistence": true
+  },
+  "5h": {
+    "dpd_max": 0.5,
+    "wind_max": 3,
+    "night_only": true,
+    "with_persistence": true
+  },
+  "6h": {
+    "dpd_max": 0.5,
+    "wind_max": 3,
+    "night_only": true,
+    "with_persistence": true
+  }
+}

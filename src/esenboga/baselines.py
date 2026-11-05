@@ -1,4 +1,5 @@
-"""Reference forecasts: persistence, METAR TREND and TAF, aligned to the analysis grid."""
+"""Reference forecasts: persistence, a forecaster's rule of thumb, METAR TREND and TAF, aligned
+to the analysis grid."""
 from __future__ import annotations
 
 import glob
@@ -9,7 +10,32 @@ import pandas as pd
 
 from .config import INTERIM, RAW_TAF, STATION, VIS_FOG_M
 from .metar import parse_metar, trend_vis_range
+from .metrics import categorical_scores
 from .taf import TafArchive, read_ogimet_taf_file
+
+EXPERT_GRID = [{"dpd_max": d, "wind_max": w, "night_only": n, "with_persistence": p}
+               for d in (0.5, 1.0, 1.5, 2.0, 3.0) for w in (3, 5, 8, 12)
+               for n in (False, True) for p in (False, True)]
+
+
+def expert_rule(X: pd.DataFrame, dpd_max: float, wind_max: float, night_only: bool,
+                with_persistence: bool) -> np.ndarray:
+    """Forecaster's rule of thumb for radiation fog, a transparent reference for the models:
+    fog is forecast for t+h when the dew-point depression and the wind speed are small (and,
+    optionally, the valid time is at night), or - with persistence - when fog is observed now."""
+    known = X["dpd_c"].notna() & X["wind_speed_kt"].notna()
+    fog = (X["dpd_c"] <= dpd_max) & (X["wind_speed_kt"] <= wind_max)
+    if night_only:
+        fog &= X["vt_is_night"] == 1
+    if with_persistence:
+        fog |= X["fog_now"] == 1
+    return fog.astype(float).where(known).to_numpy()
+
+
+def tune_expert_rule(X: pd.DataFrame, y: np.ndarray, val: np.ndarray) -> dict:
+    """Thresholds of :func:`expert_rule` that maximise CSI on the validation seasons."""
+    return max(EXPERT_GRID, key=lambda g: categorical_scores(
+        y[val], expert_rule(X[val], **g) == 1)["CSI"])
 
 
 def grid_raw_reports(index: pd.DatetimeIndex, max_age_min: int = 30) -> pd.Series:

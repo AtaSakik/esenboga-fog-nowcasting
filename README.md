@@ -5,16 +5,22 @@
 Term project for **YMH453 Machine Learning**, Department of Software Engineering, Ankara University (2026–2027 fall) — Ata Sakik.
 
 This repository contains everything needed to reproduce the study: a 21.8-year quality-controlled
-METAR/SPECI data set for LTAC (2005–2026), a purpose-built METAR/TAF decoder, six model families
-(logistic regression, random forest, XGBoost, LightGBM, multi-task GRU/LSTM) forecasting fog
-(visibility < 1000 m) and ILS/RVR categories 1, 3 and 6 h ahead, a complete verification against
-persistence, climatology and the official METAR TREND, SHAP explanations, an IEEE-format paper in
-English and Turkish, a presentation and a live web-based early-warning application.
+METAR/SPECI data set for LTAC (2005–2026), a purpose-built METAR/TAF decoder, a benchmark of thirteen
+techniques from six families (logistic regression, analog k-NN, random forest, XGBoost, LightGBM, CatBoost,
+explainable boosting machine, MLP, multi-task GRU/LSTM/TCN/Transformer and a greedy ensemble) forecasting
+fog (visibility < 1000 m) and ILS/RVR categories 1, 3 and 6 h ahead, a complete verification against
+persistence, a forecaster's rule of thumb, climatology and the official METAR TREND (Holm-corrected
+day-block bootstrap tests, SEDI, relative economic value, computational cost), SHAP explanations, an
+IEEE-format paper in English and Turkish, a TÜBİTAK 2209-A proposal draft, a plain-language summary, a
+presentation and a live web-based early-warning application.
 
 > **Türkçe özet.** Kalite kontrolünden geçirilmiş 21,8 yıllık LTAC METAR/SPECI verisiyle sis
 > (görüş < 1000 m) ve ILS kategorileri (RVR ≥ 550 m, 350–550 m, < 350 m) 1, 3 ve 6 saat önceden
-> tahmin edilmiştir. Tüm modeller kalıcılık tahminini anlamlı biçimde geçmekte, LightGBM 1 saatte
-> resmî METAR TREND tahminini CSI'da 0,105 farkla aşmaktadır. Makalenin Türkçe sürümü
+> tahmin edilmiştir. Altı aileden on üç teknik karşılaştırılmış; yöntemleri birleştiren topluluk genel
+> sıralamada birinci olmuş, tüm teknikler kalıcılık tahminini anlamlı biçimde geçmiş, LightGBM 1 saatte
+> resmî METAR TREND tahminini CSI'da 0,106 farkla aşmıştır. TÜBİTAK 2209-A öneri taslağı
+> [`report/TUBITAK_2209A_Proje_Onerisi.pdf`](report/TUBITAK_2209A_Proje_Onerisi.pdf), herkes için sade
+> özet [`report/Herkes_Icin_Ozet.pdf`](report/Herkes_Icin_Ozet.pdf) dosyasındadır. Makalenin Türkçe sürümü
 > [`report/Esenboga_DusukGorus_Tahmini_IEEE_TR.pdf`](report/Esenboga_DusukGorus_Tahmini_IEEE_TR.pdf),
 > sunum ise [`presentation/Esenboga_Sunum_TR.pptx`](presentation/Esenboga_Sunum_TR.pptx) dosyasındadır.
 > Canlı erken uyarı sayfası, teknik bilgisi olmayan ziyaretçiler için sade Türkçeyle hazırlanmıştır:
@@ -24,20 +30,26 @@ English and Turkish, a presentation and a live web-based early-warning applicati
 
 | Fog (VIS < 1000 m) | 1 h | 3 h | 6 h |
 |---|---|---|---|
-| Best CSI (model) | **0.729** (LightGBM) | **0.472** (LSTM) | **0.340** (LSTM) |
+| Best CSI (technique) | **0.729** (ensemble, LightGBM) | **0.472** (LSTM) | **0.341** (ensemble) |
 | Persistence CSI | 0.652 | 0.321 | 0.129 |
-| Best PR-AUC (model) | 0.892 (XGBoost) | 0.685 (GRU) | 0.517 (GRU) |
-| Best Brier skill score | 0.739 | 0.463 | 0.317 |
+| Best PR-AUC (technique) | 0.899 (ensemble) | 0.685 (GRU) | 0.517 (GRU) |
+| Best Brier skill score | 0.742 | 0.463 | 0.317 |
 
-* All six models beat persistence at every lead time (paired day-block bootstrap, 95% CI excludes 0).
-* At 1 h LightGBM beats the official METAR TREND: ΔCSI = **+0.105** [0.075, 0.140].
-* ILS categories: RPSS 0.64 / 0.41 / 0.28 at 1 / 3 / 6 h (persistence 0.43 / −0.17 / −0.70).
+* Benchmark of 13 techniques: the greedy ensemble ranks first overall (mean rank 2.3), then LightGBM (3.9),
+  LSTM (4.5) and random forest (4.8). Trees and the glass-box EBM lead at 1 h, recurrent networks at 3–6 h;
+  most differences among the leaders are not significant (Holm-adjusted day-block bootstrap), while every
+  technique beats persistence, the forecaster's rule of thumb and the TREND.
+* At 1 h LightGBM beats the official METAR TREND: ΔCSI = **+0.106** [0.073, 0.138].
+* Relative economic value at a cost/loss ratio of 0.05: 0.89 / 0.77 / 0.70 for the ensemble vs
+  0.78 / 0.46 / 0.19 for persistence (1 / 3 / 6 h).
+* ILS categories: RPSS 0.64 / 0.43 / 0.28 at 1 / 3 / 6 h for the ensemble (persistence 0.43 / −0.17 / −0.70).
 * SHAP: the current humidity/visibility state dominates at 1 h (78% of attribution); at 6 h the
   solar cycle (28%) and boundary-layer memory (21%) take over — the physics of radiation fog.
 * The data set reproduces the published climatology: 819.5 fog hours in 2011–2020 (≈800 h in
   Koyuncu et al., 2022), 94.6% of fog in October–February, RVR ≤ 350 m in 55.5% of fog cases.
 
 ![Fog climate of LTAC](results/figures/en/climatology.png)
+![Benchmark of the thirteen techniques](results/figures/en/benchmark.png)
 ![Precision–recall curves](results/figures/en/pr_curves.png)
 
 ## Deliverables
@@ -45,6 +57,8 @@ English and Turkish, a presentation and a live web-based early-warning applicati
 | | English | Türkçe |
 |---|---|---|
 | IEEE Transactions-format paper | [`report/Esenboga_LowVisibility_Nowcasting_IEEE_EN.pdf`](report/Esenboga_LowVisibility_Nowcasting_IEEE_EN.pdf) (`.docx` alongside) | [`report/Esenboga_DusukGorus_Tahmini_IEEE_TR.pdf`](report/Esenboga_DusukGorus_Tahmini_IEEE_TR.pdf) |
+| TÜBİTAK 2209-A proposal draft | – | [`report/TUBITAK_2209A_Proje_Onerisi.pdf`](report/TUBITAK_2209A_Proje_Onerisi.pdf) (`.docx` alongside) |
+| Plain-language summary | – | [`report/Herkes_Icin_Ozet.pdf`](report/Herkes_Icin_Ozet.pdf) |
 | Presentation (15 slides, speaker notes) | [`presentation/Esenboga_Presentation_EN.pptx`](presentation/Esenboga_Presentation_EN.pptx) | [`presentation/Esenboga_Sunum_TR.pptx`](presentation/Esenboga_Sunum_TR.pptx) |
 | Figures | `results/figures/en/` | `results/figures/tr/` |
 
@@ -53,12 +67,12 @@ English and Turkish, a presentation and a live web-based early-warning applicati
 ```
 src/esenboga/      decoder (metar.py, taf.py), data assembly & QC, features, models, metrics,
                    deep models, baselines (persistence/TREND/TAF), inference for the web app
-scripts/           01_prepare_data … 08_operational_replay (numbered pipeline steps)
+scripts/           01_prepare_data … 10_benchmark (pipeline steps; order in run_all.ps1)
 app/               FastAPI server, live prediction log (SQLite) and the dashboard (HTML/CSS/JS)
 data/              raw archives (METAR/SPECI, TAF) and processed features/targets — see data/README.md
 models/            trained & calibrated models (joblib), tuned hyper-parameters
 results/           tables (CSV/JSON), predictions, figures (EN/TR)
-report/            manuscript sources (content_en.md, content_tr.md), builder, references, outputs
+report/            paper sources (content_en/tr.md), proposal_tr.md, summary_tr.md, builders, references
 presentation/      deck generator (pptxgenjs) and the decks
 tests/             parser, TAF, solar-geometry and look-ahead leakage tests
 ```
@@ -72,9 +86,10 @@ pwsh ./run_all.ps1                                       # downloads, trains, ev
 ```
 
 Individual steps: `python scripts/01_prepare_data.py`, `python -m pytest tests`,
-`python scripts/02_train_tabular.py`, `python scripts/03_train_deep.py`, `python scripts/05_evaluate.py`,
-`python scripts/06_shap.py`, `python scripts/07_figures.py`, `python scripts/08_operational_replay.py`,
-`python report/build_paper.py` (requires MS Word for the PDF export).
+`python scripts/02_train_tabular.py`, `python scripts/03_train_deep.py`, `python scripts/09_ensemble.py`,
+`python scripts/05_evaluate.py`, `python scripts/10_benchmark.py`, `python scripts/06_shap.py`,
+`python scripts/07_figures.py`, `python scripts/08_operational_replay.py`, `python report/build_paper.py`
+and `python report/build_docs.py` (both require MS Word for the PDF export).
 
 ## Live dashboard (serverless, free)
 

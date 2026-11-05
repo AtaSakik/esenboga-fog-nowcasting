@@ -72,5 +72,31 @@
   "wilks1997": "D. S. Wilks, “Resampling hypothesis tests for autocorrelated fields,” *J. Climate*, vol. 10, no. 1, pp. 65–82, Jan. 1997, doi: 10.1175/1520-0442(1997)010<0065:RHTFAF>2.0.CO;2.",
   "lundberg2017": "S. M. Lundberg and S.-I. Lee, “A unified approach to interpreting model predictions,” in *Proc. Adv. Neural Inf. Process. Syst. (NeurIPS)*, vol. 30, Long Beach, CA, USA, 2017, pp. 4765–4774.",
   "lundberg2020": "S. M. Lundberg et al., “From local explanations to global understanding with explainable AI for trees,” *Nat. Mach. Intell.*, vol. 2, no. 1, pp. 56–67, Jan. 2020, doi: 10.1038/s42256-019-0138-9.",
-  "shapley1953": "L. S. Shapley, “A value for n-person games,” in *Contributions to the Theory of Games*, vol. II, H. W. Kuhn and A. W. Tucker, Eds. Princeton, NJ, USA: Princeton Univ. Press, 1953, pp. 307–317, doi: 10.1515/9781400881970-018."
+  "shapley1953": "L. S. Shapley, “A value for n-person games,” in *Contributions to the Theory of Games*, vol. II, H. W. Kuhn and A. W. Tucker, Eds. Princeton, NJ, USA: Princeton Univ. Press, 1953, pp. 307–317, doi: 10.1515/9781400881970-018.",
+  "prokhorenkova2018": "L. Prokhorenkova, G. Gusev, A. Vorobev, A. V. Dorogush, and A. Gulin, “CatBoost: Unbiased boosting with categorical features,” in *Proc. Adv. Neural Inf. Process. Syst. (NeurIPS)*, vol. 31, Montréal, QC, Canada, 2018, pp. 6638–6648.",
+  "lou2013": "Y. Lou, R. Caruana, J. Gehrke, and G. Hooker, “Accurate intelligible models with pairwise interactions,” in *Proc. 19th ACM SIGKDD Int. Conf. Knowl. Discov. Data Min.*, Chicago, IL, USA, 2013, pp. 623–631, doi: 10.1145/2487575.2487579.",
+  "nori2019": "H. Nori, S. Jenkins, P. Koch, and R. Caruana, “InterpretML: A unified framework for machine learning interpretability,” 2019, arXiv:1909.09223.",
+  "hansen2007": "B. Hansen, “A fuzzy logic–based analog forecasting system for ceiling and visibility,” *Weather Forecast.*, vol. 22, no. 6, pp. 1319–1330, Dec. 2007, doi: 10.1175/2007WAF2006017.1.",
+  "delle2013": "L. Delle Monache, F. A. Eckel, D. L. Rife, B. Nagarajan, and K. Searight, “Probabilistic weather prediction with an analog ensemble,” *Mon. Weather Rev.*, vol. 141, no. 10, pp. 3498–3516, Oct. 2013, doi: 10.1175/MWR-D-12-00281.1.",
+  "bai2018": "S. Bai, J. Z. Kolter, and V. Koltun, “An empirical evaluation of generic convolutional and recurrent networks for sequence modeling,” 2018, arXiv:1803.01271.",
+  "vaswani2017": "A. Vaswani et al., “Attention is all you need,” in *Proc. Adv. Neural Inf. Process. Syst. (NeurIPS)*, vol. 30, Long Beach, CA, USA, 2017, pp. 5998–6008.",
+  "caruana2004": "R. Caruana, A. Niculescu-Mizil, G. Crew, and A. Ksikes, “Ensemble selection from libraries of models,” in *Proc. 21st Int. Conf. Mach. Learn. (ICML)*, Banff, AB, Canada, 2004, Art. no. 18, doi: 10.1145/1015330.1015432.",
+  "ferro2011": "C. A. T. Ferro and D. B. Stephenson, “Extremal dependence indices: Improved verification measures for deterministic forecasts of rare binary events,” *Weather Forecast.*, vol. 26, no. 5, pp. 699–713, Oct. 2011, doi: 10.1175/WAF-D-10-05030.1.",
+  "richardson2000": "D. S. Richardson, “Skill and relative economic value of the ECMWF ensemble prediction system,” *Q. J. R. Meteorol. Soc.*, vol. 126, no. 563, pp. 649–667, Jan. 2000, doi: 10.1002/qj.49712656313.",
+  "holm1979": "S. Holm, “A simple sequentially rejective multiple test procedure,” *Scand. J. Statist.*, vol. 6, no. 2, pp. 65–70, 1979.",
+  "grinsztajn2022": "L. Grinsztajn, E. Oyallon, and G. Varoquaux, “Why do tree-based models still outperform deep learning on typical tabular data?,” in *Proc. Adv. Neural Inf. Process. Syst. (NeurIPS), Datasets and Benchmarks Track*, vol. 35, New Orleans, LA, USA, 2022, pp. 507–520.",
+  "hollmann2025": "N. Hollmann et al., “Accurate predictions on small data with a tabular foundation model,” *Nature*, vol. 637, no. 8045, pp. 319–326, Jan. 2025, doi: 10.1038/s41586-024-08328-6.",
+  "hersbach2020": "H. Hersbach et al., “The ERA5 global reanalysis,” *Q. J. R. Meteorol. Soc.*, vol. 146, no. 730, pp. 1999–2049, Jul. 2020, doi: 10.1002/qj.3803.",
+  "eurocontrol2025": {
+    "en": "EUROCONTROL, “Standard inputs for economic analyses,” ed. 10.0.1, Brussels, Belgium, May 2025. [Online]. Available: https://ansperformance.eu/economics/cba/standard-inputs/ (accessed Nov. 5, 2026).",
+    "tr": "EUROCONTROL, “Standard inputs for economic analyses,” 10.0.1. baskı, Brüksel, Belçika, May. 2025. [Çevrimiçi]. Erişim: https://ansperformance.eu/economics/cba/standard-inputs/ (erişim tarihi 5 Kasım 2026)."
+  },
+  "dhmi2026": {
+    "en": "General Directorate of State Airports Authority, “Passenger traffic statistics, January 2026,” Ankara, Türkiye, Feb. 2026. [Online]. Available: https://www.dhmi.gov.tr/Lists/Istatislikler/Attachments/431/YOLCU.pdf (accessed Nov. 5, 2026).",
+    "tr": "Devlet Hava Meydanları İşletmesi Genel Müdürlüğü, “Yolcu trafiği istatistikleri, Ocak 2026,” Ankara, Şub. 2026. [Çevrimiçi]. Erişim: https://www.dhmi.gov.tr/Lists/Istatislikler/Attachments/431/YOLCU.pdf (erişim tarihi 5 Kasım 2026)."
+  },
+  "tubitak2025": {
+    "en": "TÜBİTAK, “Priority areas list,” Ankara, Türkiye, Jul. 2025. [Online]. Available: https://tubitak.gov.tr/sites/default/files/2025-07/Oncelikli_Alanlar_2025-2.pdf (accessed Nov. 5, 2026).",
+    "tr": "TÜBİTAK, “Öncelikli alanlar listesi,” Ankara, Tem. 2025. [Çevrimiçi]. Erişim: https://tubitak.gov.tr/sites/default/files/2025-07/Oncelikli_Alanlar_2025-2.pdf (erişim tarihi 5 Kasım 2026)."
+  }
 }

@@ -14,18 +14,26 @@ import matplotlib.pyplot as plt  # noqa: E402
 from .config import FIGURES  # noqa: E402
 
 COL_W, PAGE_W = 3.5, 7.16
-MODEL_COLORS = {"lr": "#7f7f7f", "rf": "#2ca02c", "xgb": "#9467bd", "lgbm": "#1f77b4",
-                "gru": "#ff7f0e", "lstm": "#d62728", "persistence": "#000000",
-                "trend_prev": "#8c564b", "trend_worst": "#e377c2", "taf_prev": "#17becf",
-                "taf_worst": "#bcbd22", "climatology": "#aaaaaa"}
+MODEL_COLORS = {"lr": "#7f7f7f", "knn": "#bcbd22", "rf": "#2ca02c", "xgb": "#9467bd",
+                "lgbm": "#1f77b4", "cat": "#17becf", "ebm": "#8c564b", "mlp": "#e377c2",
+                "gru": "#ff7f0e", "lstm": "#d62728", "tcn": "#f2a541", "transformer": "#a83279",
+                "ens": "#13233a", "persistence": "#000000", "expert_rule": "#6b8e23",
+                "trend": "#8c564b", "trend_prev": "#8c564b", "trend_worst": "#e377c2",
+                "taf_prev": "#17becf", "taf_worst": "#bcbd22", "climatology": "#aaaaaa"}
 MODEL_LABELS = {
-    "en": {"lr": "Logistic regression", "rf": "Random forest", "xgb": "XGBoost",
-           "lgbm": "LightGBM", "gru": "GRU", "lstm": "LSTM", "persistence": "Persistence",
+    "en": {"lr": "Logistic regression", "knn": "Analog (k-NN)", "rf": "Random forest",
+           "xgb": "XGBoost", "lgbm": "LightGBM", "cat": "CatBoost", "ebm": "EBM",
+           "mlp": "MLP", "gru": "GRU", "lstm": "LSTM", "tcn": "TCN",
+           "transformer": "Transformer", "ens": "Ensemble", "persistence": "Persistence",
+           "expert_rule": "Forecaster's rule", "trend": "TREND",
            "trend_prev": "TREND (prevailing)", "trend_worst": "TREND (worst case)",
            "taf_prev": "TAF (prevailing)", "taf_worst": "TAF (worst case)",
            "climatology": "Climatology"},
-    "tr": {"lr": "Lojistik regresyon", "rf": "Rastgele orman", "xgb": "XGBoost",
-           "lgbm": "LightGBM", "gru": "GRU", "lstm": "LSTM", "persistence": "Kalıcılık",
+    "tr": {"lr": "Lojistik regresyon", "knn": "Analog (k-NN)", "rf": "Rastgele orman",
+           "xgb": "XGBoost", "lgbm": "LightGBM", "cat": "CatBoost", "ebm": "EBM",
+           "mlp": "MLP", "gru": "GRU", "lstm": "LSTM", "tcn": "TCN",
+           "transformer": "Transformer", "ens": "Topluluk", "persistence": "Kalıcılık",
+           "expert_rule": "Tahminci kuralı", "trend": "TREND",
            "trend_prev": "TREND (hâkim)", "trend_worst": "TREND (en kötü)",
            "taf_prev": "TAF (hâkim)", "taf_worst": "TAF (en kötü)",
            "climatology": "Klimatoloji"},
