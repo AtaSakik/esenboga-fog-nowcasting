@@ -36,6 +36,28 @@ def test_awc_is_retried_before_falling_back_to_iem(monkeypatch, capsys):
     assert capsys.readouterr().err.count("METAR source failed: aviationweather.gov") == 2
 
 
+def _reports(hours_old: float, source: str) -> pd.DataFrame:
+    t = pd.Timestamp.now(tz="UTC").floor("min") - pd.Timedelta(hours=hours_old)
+    return pd.DataFrame({"obs_time": [t - pd.Timedelta(minutes=30), t], "raw": ["a", "b"],
+                         "source": source, "type_hint": None})
+
+
+def test_stale_source_falls_back_to_a_fresh_one(monkeypatch):
+    monkeypatch.setattr(inference, "fetch_awc", lambda hours: _reports(4, "AWC"))
+    monkeypatch.setattr(inference, "fetch_iem", lambda hours: _reports(0.5, "IEM"))
+    monkeypatch.setattr(inference.time, "sleep", lambda s: None)
+    df, source = inference.fetch_reports()
+    assert source == "IEM" and (df["source"] == "IEM").all()
+
+
+def test_freshest_answer_used_when_every_source_is_stale(monkeypatch):
+    monkeypatch.setattr(inference, "fetch_awc", lambda hours: _reports(3, "AWC"))
+    monkeypatch.setattr(inference, "fetch_iem", lambda hours: _reports(5, "IEM"))
+    monkeypatch.setattr(inference.time, "sleep", lambda s: None)
+    df, source = inference.fetch_reports()
+    assert source == "aviationweather.gov" and (df["source"] == "AWC").all()
+
+
 def test_every_source_failing_raises(monkeypatch):
     monkeypatch.setattr(inference, "fetch_awc", lambda hours: pd.DataFrame())
     monkeypatch.setattr(inference, "fetch_iem", _fail(OSError("down")))

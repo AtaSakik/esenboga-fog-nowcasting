@@ -30,6 +30,8 @@ UA = "Mozilla/5.0 (LTAC fog nowcasting research app)"
 # 7 days of reports: the features need MEMORY_H = 96 h, the rest lets the live cycle recompute
 # skipped issue times (live_log.catch_up). AWC returns at most 400 reports, about 8 days at LTAC.
 HISTORY_H = 168
+# LTAC reports every 30 min; an answer whose newest report is older than this is incomplete
+STALE_H = 2.0
 
 
 # ============================================================================ retrieval
@@ -70,21 +72,32 @@ def fetch_iem(hours: int = HISTORY_H, now: datetime | None = None) -> pd.DataFra
 
 def fetch_reports(hours: int = HISTORY_H, awc_attempts: int = 2) -> tuple[pd.DataFrame, str]:
     """Latest reports from AWC, retried once after a short pause; falls back to IEM, whose
-    archive can lag the newest report by about half an hour. Every failure goes to stderr so
-    that a fallback is visible in the logs."""
-    errors = []
+    archive can lag the newest report by about half an hour. A source whose newest report is
+    more than STALE_H hours old counts as failing (AWC once answered with reports that ended
+    four hours before the run); if every source is stale, the freshest answer is used. Every
+    failure goes to stderr so that a fallback is visible in the logs."""
+    errors, stale = [], []
+    now = pd.Timestamp.now(tz="UTC")
     for name, fn, attempts in (("aviationweather.gov", fetch_awc, awc_attempts), ("IEM", fetch_iem, 1)):
         for attempt in range(attempts):
             try:
                 df = fn(hours)
                 if len(df):
-                    return df.drop_duplicates("obs_time").sort_values("obs_time"), name
-                errors.append(f"{name}: no reports returned")
+                    df = df.drop_duplicates("obs_time").sort_values("obs_time")
+                    age_h = (now - df["obs_time"].iloc[-1]).total_seconds() / 3600
+                    if age_h <= STALE_H:
+                        return df, name
+                    stale.append((df, name))
+                    errors.append(f"{name}: newest report is {age_h:.1f} h old")
+                else:
+                    errors.append(f"{name}: no reports returned")
             except Exception as exc:  # network errors -> retry, then the next source
                 errors.append(f"{name}: {exc!r}")
             print(f"METAR source failed: {errors[-1]}", file=sys.stderr)
             if attempt + 1 < attempts:
                 time.sleep(10)
+    if stale:
+        return max(stale, key=lambda s: s[0]["obs_time"].iloc[-1])
     raise RuntimeError("no METAR source reachable: " + "; ".join(errors))
 
 
