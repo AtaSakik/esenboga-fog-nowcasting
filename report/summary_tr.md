@@ -3,6 +3,7 @@ title: Esenboğa'da Sisi Saatler Önceden Görmek
 subtitle: Yapay zekâ, sisi en iyi hangi yöntemle tahmin ediyor? – Herkes için özet
 lines: Ata Sakik, Ankara Üniversitesi Yazılım Mühendisliği, YMH453 Makine Öğrenmesi dönem projesi | Canlı sistem: https://atasakik.github.io/esenboga-fog-nowcasting/
 header: Herkes için özet
+author: Ata Sakik
 lang: tr
 ---
 

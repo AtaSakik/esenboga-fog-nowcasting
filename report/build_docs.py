@@ -92,6 +92,9 @@ class Doc:
         self.meta = meta
         self.lang = meta.get("lang", "tr")
         self.d = docx.Document()
+        cp = self.d.core_properties          # otherwise the library's default name is the author
+        cp.author = cp.last_modified_by = meta.get("author", "")
+        cp.title = meta.get("title", "")
         st = self.d.styles["Normal"]
         st.font.name = meta.get("font", "Calibri")
         st.element.rPr.rFonts.set(qn("w:eastAsia"), st.font.name)

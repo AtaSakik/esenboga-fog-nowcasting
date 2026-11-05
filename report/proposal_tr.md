@@ -3,6 +3,7 @@ title: Ankara Esenboğa Havalimanı'nda Sis ve Düşük Görüşün Makine Öğr
 subtitle: TÜBİTAK 2209-A Üniversite Öğrencileri Araştırma Projeleri Destekleme Programı – Araştırma Önerisi Taslağı (2026 Çağrısı)
 lines: **Proje yürütücüsü:** Ata Sakik (Yazılım Mühendisliği, 4. sınıf) | **Akademik danışman:** [unvanı, adı ve soyadı – başvurudan önce eklenecek] | **Önerilen süre:** 12 ay | **Talep edilen bütçe:** 12 000 TL
 header: TÜBİTAK 2209-A araştırma önerisi taslağı
+author: Ata Sakik
 lang: tr
 ---
 
