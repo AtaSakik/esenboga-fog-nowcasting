@@ -159,12 +159,12 @@ newSection(tr ? "Giriş" : "Introduction");
                    "Fair comparison with official TAF/TREND is rare", "What models learn is rarely explained"],
     0.85, 2.2, 4.15, 4.2, 16);
   const items = tr ? [["21,8 yıllık açık veri seti", "kalite kontrollü METAR/SPECI, klimatolojiyi yeniden üretiyor"],
-                      ["6 model ailesinin karşılaştırması", "kalibrasyon, dengesizlik deneyi, bootstrap anlamlılık testleri"],
+                      ["13 tekniğin karşılaştırması", "6 aile, Holm düzeltmeli testler, ekonomik değer, maliyet"],
                       ["ILS/RVR kategorisi tahmini", "sıralı (ordinal) formülasyon, başlangıç/dağılma analizi"],
                       ["SHAP ile açıklanabilirlik", "öğrenilen ilişkiler sis fiziğiyle tutarlı"],
                       ["Canlı erken uyarı uygulaması", "aynı işlem hattı, kademeli uyarı, gerçek zamanlı doğrulama"]]
                    : [["21.8-year open data set", "quality-controlled METAR/SPECI reproducing the climatology"],
-                      ["Benchmark of 6 model families", "calibration, imbalance ablation, bootstrap significance"],
+                      ["Benchmark of 13 techniques", "6 families, Holm-corrected tests, economic value, cost"],
                       ["ILS/RVR category forecasts", "ordinal formulation, onset/dissipation analysis"],
                       ["Explainability with SHAP", "learnt relationships consistent with fog physics"],
                       ["Live early-warning application", "same pipeline, tiered alerts, real-time verification"]];
@@ -240,8 +240,8 @@ newSection(tr ? "Veri ve yöntem" : "Data and method");
 }
 {
   const s = slide("CONTENT", tr ? "Modeller ve sızıntısız doğrulama" : "Models and leakage-free validation",
-    tr ? "Veriyi rastgele değil kronolojik ve sezonlarla hizalı böldüm; aksi hâlde aynı sis olayının ardışık örnekleri eğitim ve teste dağılırdı. Altı model ailesi: lojistik regresyon, rastgele orman, XGBoost, LightGBM ve çok görevli GRU/LSTM. Hiperparametreler Optuna ile doğrulama sezonlarında ayarlandı. SMOTE ve sınıf ağırlığı olasılıkları bozduğu için nihai modellerde yeniden örnekleme yapmadım; kalibrasyonu bir-sezon-dışarıda çapraz doğrulamayla seçtim."
-       : "Chronological, season-aligned split; six model families; Optuna tuning on validation seasons; no resampling in the final models because SMOTE and class weights distort probabilities; calibration chosen by leave-one-season-out CV.");
+    tr ? "Veriyi rastgele değil kronolojik ve sezonlarla hizalı böldüm; aksi hâlde aynı sis olayının ardışık örnekleri eğitim ve teste dağılırdı. Altı aileden on üç teknik yarıştı: doğrusal ve analog yöntemler, dört ağaç topluluğu, açıklanabilir artırma makinesi, beş sinir ağı ve bunları birleştiren bir topluluk. Hepsi aynı öngörücüler, aynı bölümleme ve aynı kalibrasyon kuralıyla eğitildi. SMOTE ve sınıf ağırlığı olasılıkları bozduğu için nihai modellerde yeniden örnekleme yapmadım; kalibrasyonu bir-sezon-dışarıda çapraz doğrulamayla seçtim."
+       : "Chronological, season-aligned split; thirteen techniques from six families under one protocol (same predictors, splits and calibration rule); no resampling in the final models because SMOTE and class weights distort probabilities; calibration chosen by leave-one-season-out CV.");
   const segs = [[tr ? "Eğitim" : "Training", "2005–2019", 14.5, HEX.dk2], [tr ? "Doğrulama" : "Validation", "2019–2022", 3, HEX.accent2],
                 [tr ? "Test" : "Test", "2022–2026", 4, HEX.accent4], [tr ? "Canlı" : "Live", "2026–", 1, HEX.accent1]];
   let x = 0.6;
@@ -254,12 +254,12 @@ newSection(tr ? "Veri ve yöntem" : "Data and method");
         valign: "middle", margin: 0, isTextBox: true });
     x += w;
   });
-  const cols = tr ? [["Modeller", ["Lojistik regresyon (temel)", "Rastgele orman", "XGBoost ve LightGBM (Optuna, 30 deneme)", "Çok görevli GRU ve LSTM (12 sa dizi, GPU)"]],
+  const cols = tr ? [["13 teknik, 6 aile", ["Doğrusal ve analog: LR, k-NN", "Ağaçlar: RF, XGBoost, LightGBM, CatBoost", "Cam kutu: EBM", "Sinir ağları: MLP, GRU, LSTM, TCN, Transformer", "Topluluk: açgözlü seçim"]],
                      ["Dengesizlik ve kalibrasyon", ["Sis örneklerin yalnızca %1'i", "SMOTE/ağırlık: olasılıkları bozuyor", "Kalibrasyon: yok/Platt/izotonik", "Eşik: doğrulamada en yüksek CSI"]],
-                     ["Sızıntı kontrolü", ["Öznitelik yalnızca t'ye kadarki veriden", "Hedef t+h'deki yeni rasat", "Otomatik sızıntı testi (17 test)", "Test sezonları tek kez kullanıldı"]]]
-                  : [["Models", ["Logistic regression (baseline)", "Random forest", "XGBoost and LightGBM (Optuna, 30 trials)", "Multi-task GRU and LSTM (12-h sequence, GPU)"]],
+                     ["Sızıntı kontrolü", ["Öznitelik yalnızca t'ye kadarki veriden", "Hedef t+h'deki yeni rasat", "Otomatik testler (28 test)", "Test sezonları tek kez kullanıldı"]]]
+                  : [["13 techniques, 6 families", ["Linear and analog: LR, k-NN", "Trees: RF, XGBoost, LightGBM, CatBoost", "Glass box: EBM", "Neural: MLP, GRU, LSTM, TCN, Transformer", "Ensemble: greedy selection"]],
                      ["Imbalance and calibration", ["Fog is only 1% of samples", "SMOTE/weights distort probabilities", "Calibration: none/Platt/isotonic", "Threshold: max CSI on validation"]],
-                     ["Leakage control", ["Features use data up to t only", "Target is a new report at t+h", "Automated leakage tests (17 tests)", "Test seasons evaluated once"]]];
+                     ["Leakage control", ["Features use data up to t only", "Target is a new report at t+h", "Automated tests (28 tests)", "Test seasons evaluated once"]]];
   cols.forEach(([h, items], i) => {
     const cx = 0.6 + i * 4.15;
     card(s, cx, 2.7, 3.85, 3.95, HEX.lt2);
@@ -270,11 +270,11 @@ newSection(tr ? "Veri ve yöntem" : "Data and method");
 
 newSection(tr ? "Bulgular" : "Results");
 {
-  const s = slide("CONTENT", tr ? "Tüm modeller kalıcılığı anlamlı biçimde geçiyor" : "All models significantly beat persistence",
-    tr ? "Dört bağımsız test sezonunda en iyi kritik başarı indeksi 1, 3 ve 6 saat için 0,73, 0,47 ve 0,34; kalıcılık ise 0,65, 0,32 ve 0,13. Göreli kazanç öngörü süresiyle büyüyor: yüzde 12, 45 ve 130. Gün-blok bootstrap ile eşleştirilmiş testlerde altı modelin tamamı her öngörü süresinde kalıcılıktan anlamlı biçimde iyi. İlginç bir bulgu: 1 saatte ağaç tabanlı LightGBM, 3–6 saatte yinelemeli ağlar en iyi."
-       : "On four independent test seasons the best CSI is 0.73/0.47/0.34 vs 0.65/0.32/0.13 for persistence (+12/45/130%). All six models are significantly better at every lead time (paired day-block bootstrap). Boosting wins at 1 h, recurrent nets at 3–6 h.");
+  const s = slide("CONTENT", tr ? "Makine öğrenmesi kalıcılığı açıkça geçiyor" : "Machine learning clearly beats persistence",
+    tr ? "Dört bağımsız test sezonunda en iyi kritik başarı indeksi 1, 3 ve 6 saat için 0,73, 0,47 ve 0,34; kalıcılık ise 0,65, 0,32 ve 0,13. Göreli kazanç öngörü süresiyle büyüyor: yüzde 12, 45 ve 130. Gün-blok bootstrap ile eşleştirilmiş testlerde on üç tekniğin on ikisi her öngörü süresinde kalıcılıktan anlamlı biçimde iyi; tek istisna 1 saatlik analog yöntem. 1 saatte ağaçlar ve EBM, 3–6 saatte yinelemeli ağlar öne çıkıyor."
+       : "On four independent test seasons the best CSI is 0.73/0.47/0.34 vs 0.65/0.32/0.13 for persistence (+12/45/130%). Twelve of the thirteen techniques are significantly better at every lead time (paired day-block bootstrap); the exception is the analog forecast at 1 h. Trees and the EBM lead at 1 h, recurrent nets at 3–6 h.");
   s.addChart(pres.charts.BAR, [
-    { name: tr ? "En iyi ML" : "Best ML", labels: ["1 h", "3 h", "6 h"].map((l) => (tr ? l.replace("h", "sa") : l)), values: [0.729, 0.472, 0.340] },
+    { name: tr ? "En iyi ML" : "Best ML", labels: ["1 h", "3 h", "6 h"].map((l) => (tr ? l.replace("h", "sa") : l)), values: [0.729, 0.472, 0.341] },
     { name: tr ? "Kalıcılık" : "Persistence", labels: ["1 h", "3 h", "6 h"].map((l) => (tr ? l.replace("h", "sa") : l)), values: [0.652, 0.321, 0.129] },
   ], { x: 0.6, y: 1.35, w: 7.4, h: 5.3, barDir: "col", barGrouping: "clustered", chartColors: [HEX.accent2, HEX.dk1],
     showValue: true, dataLabelPosition: "outEnd", dataLabelFormatCode: "0.00", valAxisMaxVal: 0.9, valAxisMinVal: 0,
@@ -282,13 +282,25 @@ newSection(tr ? "Bulgular" : "Results");
     titleFontFace: "+mj-lt", titleFontSize: 16, titleColor: HEX.dk1, valGridLine: { color: "E1E7EC", size: 0.5 }, catGridLine: { style: "none" },
     ...chartText });
   stat(s, 8.5, 1.5, 4.2, tr ? "+%12  +%45  +%130" : "+12%  +45%  +130%", tr ? "1/3/6 sa CSI göreli kazancı (LightGBM)" : "relative CSI gain at 1/3/6 h (LightGBM)", { size: 30, color: C.accent2 });
-  stat(s, 8.5, 3.05, 4.2, "6 / 6", tr ? "model, her sürede anlamlı (bootstrap, p < 0,05)" : "models significant at every lead (bootstrap, p < 0.05)", { size: 34 });
-  stat(s, 8.5, 4.6, 4.2, tr ? "1 sa: LightGBM" : "1 h: LightGBM", tr ? "3–6 sa: GRU/LSTM en iyi olasılıksal beceri" : "3–6 h: GRU/LSTM best probabilistic skill", { size: 28 });
+  stat(s, 8.5, 3.05, 4.2, "12 / 13", tr ? "teknik, her sürede anlamlı (bootstrap, p < 0,05)" : "techniques significant at every lead (bootstrap, p < 0.05)", { size: 34 });
+  stat(s, 8.5, 4.6, 4.2, tr ? "1 sa: ağaçlar, EBM" : "1 h: trees, EBM", tr ? "3–6 sa: GRU/LSTM en iyi olasılıksal beceri" : "3–6 h: GRU/LSTM best probabilistic skill", { size: 28 });
+}
+{
+  const s = slide("CONTENT", tr ? "13 tekniğin karşılaştırması: topluluk birinci" : "Benchmark of 13 techniques: the ensemble ranks first",
+    tr ? "On üç tekniği aynı kurallarla yarıştırdım. Beş skor ve üç öngörü süresi üzerinden ortalama sırada yöntemleri birleştiren topluluk birinci, LightGBM ikinci, LSTM üçüncü. Ancak öndeki yöntemler arasındaki farkların çoğu Holm düzeltmeli testlerde anlamlı değil; asıl büyük fark, yöntemlerle kalıcılık ve resmî tahmin arasında. Camdan kutu EBM 1 saatte en iyiyle neredeyse aynı; yani bu sürede açıklanabilirlik neredeyse bedava. Analog yöntem anlaşılır ama en zayıf."
+       : "All thirteen techniques under one protocol. Averaged over five scores and three lead times the ensemble ranks first, LightGBM second, LSTM third. Most differences among the leaders are not significant (Holm-corrected); the big gap is to persistence and the official forecast. The glass-box EBM is practically as good as the best at 1 h; the analog forecast is transparent but weakest.");
+  image(s, "benchmark.png", 0.6, 1.3, 8.2, 3.84);
+  stat(s, 9.2, 1.35, 3.5, tr ? "1. topluluk" : "1st: ensemble", tr ? "ortalama sıra 2,3; LightGBM 3,9; LSTM 4,5" : "mean rank 2.3; LightGBM 3.9; LSTM 4.5", { size: 30, color: C.accent2 });
+  stat(s, 9.2, 2.8, 3.5, num(0.728, 3), tr ? "EBM'nin 1 sa CSI'sı (en iyi 0,729)" : "CSI of the EBM at 1 h (best 0.729)", { size: 34, color: C.accent4 });
+  stat(s, 9.2, 4.25, 3.5, tr ? "≈ berabere" : "≈ a tie", tr ? "öndekiler arasında farkların çoğu anlamlı değil" : "most differences among the leaders not significant", { size: 30 });
+  s.addText(tr ? "Ekonomik değer (maliyet/kayıp = 0,05): topluluk 0,89 / 0,77 / 0,70, kalıcılık 0,78 / 0,46 / 0,19 (1/3/6 sa). En hızlı eğitim: LightGBM 3 sn."
+               : "Economic value (cost/loss = 0.05): ensemble 0.89 / 0.77 / 0.70 vs persistence 0.78 / 0.46 / 0.19 (1/3/6 h). Fastest fit: LightGBM 3 s.",
+    { x: 0.6, y: 6.0, w: 12.1, h: 0.75, fontSize: 15, color: C.text2, margin: 0, valign: "top", isTextBox: true });
 }
 {
   const s = slide("CONTENT", tr ? "Resmî TREND tahminini de geçiyor" : "It also beats the official TREND forecast",
-    tr ? "METAR'a eklenen TREND, tahmincinin 2 saatlik resmî tahmini. Aynı test durumlarında TREND'in CSI değeri 0,62; kalıcılık 0,65; LightGBM ise 0,73. Fark 0,105 ve %95 güven aralığı 0,075 ile 0,140 arasında, yani anlamlı. Sağdaki grafik becerinin öngörü süresiyle düzgün azaldığını ve kalıcılıkla arasındaki farkın açıldığını gösteriyor. TAF için yalnızca son 30 günlük arşive erişebildim; o dönemde sis olmadığı için ne TAF ne de model yanlış alarm verdi."
-       : "TREND (the forecaster's official 2-h forecast) reaches CSI 0.62, persistence 0.65 and LightGBM 0.73 on identical cases: ΔCSI = 0.105 [0.075, 0.140]. Skill decays smoothly with lead time while the gap to persistence widens. In the 30-day TAF window no fog occurred and neither TAF nor the model raised a false alarm.");
+    tr ? "METAR'a eklenen TREND, tahmincinin 2 saatlik resmî tahmini. Aynı test durumlarında TREND'in CSI değeri 0,62; kalıcılık 0,65; LightGBM ise 0,73. Fark 0,106 ve %95 güven aralığı 0,073 ile 0,138 arasında, yani anlamlı. Sağdaki grafik becerinin öngörü süresiyle düzgün azaldığını ve kalıcılıkla arasındaki farkın açıldığını gösteriyor. TAF için yalnızca son 30 günlük arşive erişebildim; o dönemde sis olmadığı için ne TAF ne de model yanlış alarm verdi."
+       : "TREND (the forecaster's official 2-h forecast) reaches CSI 0.62, persistence 0.65 and LightGBM 0.73 on identical cases: ΔCSI = 0.106 [0.073, 0.138]. Skill decays smoothly with lead time while the gap to persistence widens. In the 30-day TAF window no fog occurred and neither TAF nor the model raised a false alarm.");
   const L = tr ? ["1 sa", "2 sa", "3 sa", "4 sa", "5 sa", "6 sa"] : ["1 h", "2 h", "3 h", "4 h", "5 h", "6 h"];
   s.addChart(pres.charts.LINE, [
     { name: "LightGBM", labels: L, values: [0.729, 0.544, 0.467, 0.384, 0.346, 0.297] },
@@ -305,12 +317,12 @@ newSection(tr ? "Bulgular" : "Results");
     s.addText(n, { x: 0.8, y, w: 2.8, h: 0.65, fontSize: 17, bold: i === 0, color: i === 0 ? HEX.lt1 : HEX.dk1, valign: "middle", margin: 0, isTextBox: true });
     s.addText(v, { x: 3.4, y, w: 1.3, h: 0.65, fontSize: 22, bold: true, align: "right", color: i === 0 ? HEX.lt1 : HEX.dk1, valign: "middle", margin: 0, isTextBox: true });
   });
-  stat(s, 0.6, 4.6, 4.4, tr ? "ΔCSI = +0,105" : "ΔCSI = +0.105", tr ? "LightGBM − TREND, %95 GA [0,075; 0,140]" : "LightGBM − TREND, 95% CI [0.075, 0.140]", { size: 32, color: C.accent2 });
+  stat(s, 0.6, 4.6, 4.4, tr ? "ΔCSI = +0,106" : "ΔCSI = +0.106", tr ? "LightGBM − TREND, %95 GA [0,073; 0,138]" : "LightGBM − TREND, 95% CI [0.073, 0.138]", { size: 32, color: C.accent2 });
 }
 {
   const s = slide("CONTENT", tr ? "Zor kısım: sis başlangıçları" : "The hard part: fog onsets",
-    tr ? "Kalıcılık sis başlangıcını ve dağılmasını tanımı gereği hiç öngöremez; asıl operasyonel değer burada. Dağılmaları modeller iyi yakalıyor: 6 saatte GRU yüzde 86. Başlangıçlar ise zor; en yüksek CSI eşiğinde yalnızca yüzde 6 ile 21 arası yakalanıyor. Bunu dürüstçe raporladım ve uygulamaya kademeli bir uyarı ekledim: eşiğin yarısında 'izleme' seviyesi, başlangıçların 1, 3 ve 6 saat önceden yüzde 25, 21 ve 38'ini işaretliyor; CSI ise çok az düşüyor."
-       : "Persistence cannot predict onsets or dissipations. Dissipations are captured well (GRU 86% at 6 h); onsets are hard (6–21% at the max-CSI thresholds). The tiered alert design helps: the watch level (half the threshold) flags 25/21/38% of onsets 1/3/6 h ahead at a small CSI cost.");
+    tr ? "Kalıcılık sis başlangıcını ve dağılmasını tanımı gereği hiç öngöremez; asıl operasyonel değer burada. Dağılmaları modeller iyi yakalıyor: 6 saatte GRU yüzde 86. Başlangıçlar ise zor; en yüksek CSI eşiğinde her ailenin en iyi yöntemi yalnızca yüzde 2 ile 23 arasını yakalıyor. Bunu dürüstçe raporladım ve uygulamaya kademeli bir uyarı ekledim: eşiğin yarısında 'izleme' seviyesi, başlangıçların 1, 3 ve 6 saat önceden yüzde 25, 21 ve 38'ini işaretliyor; CSI ise çok az düşüyor."
+       : "Persistence cannot predict onsets or dissipations. Dissipations are captured well (GRU 86% at 6 h); onsets are hard (2–23% for the best technique of each family at the max-CSI thresholds). The tiered alert design helps: the watch level (half the threshold) flags 25/21/38% of onsets 1/3/6 h ahead at a small CSI cost.");
   const L = tr ? ["1 sa", "3 sa", "6 sa"] : ["1 h", "3 h", "6 h"];
   s.addChart(pres.charts.BAR, [
     { name: tr ? "Uyarı (τ)" : "Warning (τ)", labels: L, values: [12.5, 6.3, 20.8] },
@@ -321,15 +333,16 @@ newSection(tr ? "Bulgular" : "Results");
     showTitle: true, title: tr ? "Önceden işaretlenen sis başlangıçları (%) — LightGBM" : "Fog onsets flagged in advance (%) — LightGBM",
     titleFontFace: "+mj-lt", titleFontSize: 16, titleColor: HEX.dk1, valGridLine: { color: "E1E7EC", size: 0.5 }, catGridLine: { style: "none" }, ...chartText });
   stat(s, 8.7, 1.5, 4.0, tr ? "%86" : "86%", tr ? "6 sa önceden doğru tahmin edilen dağılmalar (GRU; kalıcılık %68)" : "dissipations forecast 6 h ahead (GRU; persistence 68%)", { size: 40, color: C.accent4, lh: 0.8 });
-  stat(s, 8.7, 3.35, 4.0, tr ? "%2–21" : "2–21%", tr ? "en yüksek CSI eşiğinde yakalanan başlangıçlar" : "onsets captured at the max-CSI thresholds", { size: 40, color: C.accent3, lh: 0.8 });
+  stat(s, 8.7, 3.35, 4.0, tr ? "%2–23" : "2–23%", tr ? "en yüksek CSI eşiğinde yakalanan başlangıçlar (her ailenin en iyisi)" : "onsets captured at the max-CSI thresholds (best of each family)", { size: 40, color: C.accent3, lh: 0.8 });
   stat(s, 8.7, 5.2, 4.0, tr ? "×2–3" : "×2–3", tr ? "izleme seviyesiyle başlangıç tespiti artışı" : "more onsets flagged at the watch level", { size: 40, lh: 0.8 });
 }
 {
   const s = slide("CONTENT", tr ? "ILS kategorisi tahminleri" : "ILS-category forecasts",
-    tr ? "ILS kategorilerini sıralı bir problem olarak, iki ikili modelle tahmin ettim: RVR 550'nin altında mı ve 350'nin altında mı. Sıralı olasılık beceri skoru 1, 3 ve 6 saatte 0,64, 0,41 ve 0,28; kalıcılık ise 6 saatte -0,70. CAT III durumları yüzde 76 doğrulukla tanınıyor; en zor sınıf, dar bir geçiş bandı olan CAT II."
-       : "ILS categories are forecast as an ordinal problem with two binary models (RVR < 550 m, < 350 m). RPSS reaches 0.64/0.41/0.28 at 1/3/6 h (persistence −0.70 at 6 h). CAT III is recognised in 76% of cases; CAT II, a narrow transitional band, is hardest.");
+    tr ? "ILS kategorilerini sıralı bir problem olarak, iki ikili modelle tahmin ettim: RVR 550'nin altında mı ve 350'nin altında mı. Topluluğun sıralı olasılık beceri skoru 1, 3 ve 6 saatte 0,64, 0,43 ve 0,28; kalıcılık ise 6 saatte -0,70. CAT III durumları yüzde 76 doğrulukla tanınıyor; en zor sınıf, dar bir geçiş bandı olan CAT II."
+       : "ILS categories are forecast as an ordinal problem with two binary models (RVR < 550 m, < 350 m). The ensemble's RPSS reaches 0.64/0.43/0.28 at 1/3/6 h (persistence −0.70 at 6 h). CAT III is recognised in 76% of cases; CAT II, a narrow transitional band, is hardest.");
   image(s, "rvr_confusion.png", 0.6, 1.4, 8.3, 3.15);
-  const r = tr ? [["0,64", "RPSS 1 sa"], ["0,41", "RPSS 3 sa"], ["0,28", "RPSS 6 sa"]] : [["0.64", "RPSS 1 h"], ["0.41", "RPSS 3 h"], ["0.28", "RPSS 6 h"]];
+  const r = tr ? [["0,64", "RPSS 1 sa (topluluk)"], ["0,43", "RPSS 3 sa (topluluk)"], ["0,28", "RPSS 6 sa (topluluk)"]]
+               : [["0.64", "RPSS 1 h (ensemble)"], ["0.43", "RPSS 3 h (ensemble)"], ["0.28", "RPSS 6 h (ensemble)"]];
   r.forEach(([b, l], i) => stat(s, 9.4, 1.45 + i * 1.6, 3.3, b, l, { size: 38, color: C.accent2 }));
   bullets(s, tr ? ["CAT III (RVR < 350 m): 1 saatte durumların %76'sı doğru", "CAT II: dar geçiş bandı, komşu sınıflarla karışıyor", "Kalıcılık RPSS: 0,43 → −0,17 → −0,70"]
                 : ["CAT III (RVR < 350 m): 76% correct at 1 h", "CAT II: narrow transitional band, often confused", "Persistence RPSS: 0.43 → −0.17 → −0.70"],
@@ -371,22 +384,22 @@ newSection(tr ? "Uygulama ve sonuç" : "Application and conclusion");
 }
 {
   const s = slide("CLOSING_DARK", tr ? "Sonuç" : "Conclusion",
-    tr ? "Özetle: Esenboğa için ilk makine öğrenmesi tabanlı sis tahmin sistemini geliştirdim; tüm modeller kalıcılığı ve resmî TREND tahminini anlamlı biçimde geçiyor, modeller sis fiziğiyle tutarlı ve sistem canlı çalışıyor. Gelecekte sayısal model ve uydu verisiyle başlangıç tespitini iyileştirmeyi, TAF karşılaştırmasını tam sezona genişletmeyi ve diğer havalimanlarına aktarmayı planlıyorum. Veri, kod ve uygulama GitHub'da açık. Teşekkürler; sorularınızı alabilirim."
-       : "In summary: the first ML fog nowcast for Esenboğa; all models beat persistence and the official TREND; the models are physically consistent and run live. Future work: NWP and satellite predictors, full-season TAF comparison, transfer to other airports. Thank you — questions are welcome.");
+    tr ? "Özetle: Esenboğa için ilk makine öğrenmesi tabanlı sis tahmin sistemini geliştirdim ve 13 tekniği aynı kurallarla karşılaştırdım. Yöntemleri birleştiren topluluk birinci; yöntemler kalıcılığı ve resmî TREND tahminini geçiyor, sis fiziğiyle tutarlı ve sistem canlı çalışıyor. Bu çalışmayı TÜBİTAK 2209-A önerisine dönüştürdüm: diğer havalimanları, sayısal tahmin verisi ve bir kış boyunca canlı doğrulama. Veri, kod ve uygulama GitHub'da açık. Teşekkürler; sorularınızı alabilirim."
+       : "In summary: the first ML fog nowcast for Esenboğa and a benchmark of 13 techniques under one protocol. The ensemble ranks first; the techniques beat persistence and the official TREND, are physically consistent and run live. The work is now a TÜBİTAK 2209-A proposal: other airports, NWP predictors and a full winter of live verification. Thank you — questions are welcome.");
   const pts = tr ? [["0,73 / 0,47 / 0,34", "en iyi CSI (1/3/6 sa); kalıcılık 0,65 / 0,32 / 0,13"],
-                    ["+0,105 CSI", "1 saatte resmî METAR TREND tahminine göre (anlamlı)"],
-                    ["Fiziksel tutarlılık", "SHAP: doygunluk, zayıf karışım, ışınım döngüsü"]]
+                    ["+0,106 CSI", "1 saatte resmî METAR TREND tahminine göre (anlamlı)"],
+                    ["13 teknik", "topluluk birinci; EBM 1 saatte en iyiyle aynı ve saydam"]]
                  : [["0.73 / 0.47 / 0.34", "best CSI at 1/3/6 h; persistence 0.65 / 0.32 / 0.13"],
-                    ["+0.105 CSI", "over the official METAR TREND at 1 h (significant)"],
-                    ["Physically consistent", "SHAP: saturation, weak mixing, radiative cycle"]];
+                    ["+0.106 CSI", "over the official METAR TREND at 1 h (significant)"],
+                    ["13 techniques", "the ensemble ranks first; the transparent EBM ties the best at 1 h"]];
   pts.forEach(([b, l], i) => {
     const x = 0.6 + i * 4.15;
     s.addText(b, { x, y: 1.55, w: 3.9, h: 0.8, fontFace: "Cambria", fontSize: 28, bold: true, color: C.accent1, margin: 0, isTextBox: true });
     s.addText(l, { x, y: 2.35, w: 3.8, h: 0.9, fontSize: 15, color: HEX.lt2, margin: 0, valign: "top", isTextBox: true });
   });
   s.addText(tr ? "Gelecek çalışmalar" : "Future work", { x: 0.6, y: 3.65, w: 6, h: 0.5, fontFace: "Cambria", fontSize: 20, bold: true, color: C.background1, margin: 0, isTextBox: true });
-  s.addText((tr ? ["Sayısal hava tahmini, uydu ve seilometre öznitelikleri ile başlangıç tespiti", "Tam sis sezonlarında TAF karşılaştırması (canlı kayıt)", "Diğer Türk havalimanlarına aktarım"]
-                : ["NWP, satellite and ceilometer predictors for onset detection", "Full-season TAF comparison (live log)", "Transfer to other Turkish airports"])
+  s.addText((tr ? ["Sayısal hava tahmini, uydu ve seilometre öznitelikleri ile başlangıç tespiti", "Tam sis sezonlarında TAF karşılaştırması (canlı kayıt)", "Diğer Türk havalimanlarına aktarım (TÜBİTAK 2209-A önerisi)"]
+                : ["NWP, satellite and ceilometer predictors for onset detection", "Full-season TAF comparison (live log)", "Transfer to other Turkish airports (TÜBİTAK 2209-A proposal)"])
               .map((t, i, a) => ({ text: t, options: { bullet: true, breakLine: i < a.length - 1 } })),
     { x: 0.6, y: 4.2, w: 7.6, h: 1.6, fontSize: 16, color: HEX.lt2, paraSpaceAfter: 6, margin: 0.05, valign: "top", isTextBox: true });
   s.addText("github.com/AtaSakik/esenboga-fog-nowcasting", { x: 0.6, y: 6.25, w: 8, h: 0.45, fontSize: 16, color: C.accent1, margin: 0, isTextBox: true,

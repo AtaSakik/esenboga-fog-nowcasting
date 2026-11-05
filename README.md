@@ -17,7 +17,7 @@ presentation and a live web-based early-warning application.
 > **Türkçe özet.** Kalite kontrolünden geçirilmiş 21,8 yıllık LTAC METAR/SPECI verisiyle sis
 > (görüş < 1000 m) ve ILS kategorileri (RVR ≥ 550 m, 350–550 m, < 350 m) 1, 3 ve 6 saat önceden
 > tahmin edilmiştir. Altı aileden on üç teknik karşılaştırılmış; yöntemleri birleştiren topluluk genel
-> sıralamada birinci olmuş, tüm teknikler kalıcılık tahminini anlamlı biçimde geçmiş, LightGBM 1 saatte
+> sıralamada birinci olmuş, 1 saatlik analog tahmin dışındaki tüm teknikler kalıcılığı anlamlı biçimde geçmiş, LightGBM 1 saatte
 > resmî METAR TREND tahminini CSI'da 0,106 farkla aşmıştır. TÜBİTAK 2209-A öneri taslağı
 > [`report/TUBITAK_2209A_Proje_Onerisi.pdf`](report/TUBITAK_2209A_Proje_Onerisi.pdf), herkes için sade
 > özet [`report/Herkes_Icin_Ozet.pdf`](report/Herkes_Icin_Ozet.pdf) dosyasındadır. Makalenin Türkçe sürümü
@@ -38,7 +38,8 @@ presentation and a live web-based early-warning application.
 * Benchmark of 13 techniques: the greedy ensemble ranks first overall (mean rank 2.3), then LightGBM (3.9),
   LSTM (4.5) and random forest (4.8). Trees and the glass-box EBM lead at 1 h, recurrent networks at 3–6 h;
   most differences among the leaders are not significant (Holm-adjusted day-block bootstrap), while every
-  technique beats persistence, the forecaster's rule of thumb and the TREND.
+  technique outscores persistence, the forecaster's rule of thumb and the TREND (significantly so against
+  persistence for all but the analog forecast at 1 h).
 * At 1 h LightGBM beats the official METAR TREND: ΔCSI = **+0.106** [0.073, 0.138].
 * Relative economic value at a cost/loss ratio of 0.05: 0.89 / 0.77 / 0.70 for the ensemble vs
   0.78 / 0.46 / 0.19 for persistence (1 / 3 / 6 h).
@@ -59,7 +60,7 @@ presentation and a live web-based early-warning application.
 | IEEE Transactions-format paper | [`report/Esenboga_LowVisibility_Nowcasting_IEEE_EN.pdf`](report/Esenboga_LowVisibility_Nowcasting_IEEE_EN.pdf) (`.docx` alongside) | [`report/Esenboga_DusukGorus_Tahmini_IEEE_TR.pdf`](report/Esenboga_DusukGorus_Tahmini_IEEE_TR.pdf) |
 | TÜBİTAK 2209-A proposal draft | – | [`report/TUBITAK_2209A_Proje_Onerisi.pdf`](report/TUBITAK_2209A_Proje_Onerisi.pdf) (`.docx` alongside) |
 | Plain-language summary | – | [`report/Herkes_Icin_Ozet.pdf`](report/Herkes_Icin_Ozet.pdf) |
-| Presentation (15 slides, speaker notes) | [`presentation/Esenboga_Presentation_EN.pptx`](presentation/Esenboga_Presentation_EN.pptx) | [`presentation/Esenboga_Sunum_TR.pptx`](presentation/Esenboga_Sunum_TR.pptx) |
+| Presentation (16 slides, speaker notes) | [`presentation/Esenboga_Presentation_EN.pptx`](presentation/Esenboga_Presentation_EN.pptx) | [`presentation/Esenboga_Sunum_TR.pptx`](presentation/Esenboga_Sunum_TR.pptx) |
 | Figures | `results/figures/en/` | `results/figures/tr/` |
 
 ## Repository layout
