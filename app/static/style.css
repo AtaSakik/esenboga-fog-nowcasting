@@ -232,3 +232,19 @@ footer { margin-top: 72px; padding: 20px 0 40px; border-top: 1px solid var(--rul
   .intro .l-flash { animation: none; }
   #fog-layer { transition: none; }
 }
+
+/* method comparison: plain bars, the airfield sign yellow marks machine learning */
+.cmp { display: grid; gap: 14px; max-width: 42em; margin: 4px 0 14px; }
+.cmp-row { display: grid; grid-template-columns: 8em 1fr; gap: 5px 14px; align-items: center; }
+.cmp-when { grid-row: span 2; font-weight: 600; }
+.cmp-bar { position: relative; display: block; height: 28px; background: var(--track); border-radius: 3px; overflow: hidden; }
+.cmp-bar .fill { position: absolute; top: 0; bottom: 0; left: 0; background: var(--sign); }
+.cmp-bar.base .fill { background: #b9c3ce; }
+.cmp-val { position: relative; display: block; padding: 0 10px; line-height: 28px; font-size: 0.875rem; white-space: nowrap; }
+.cmp-val b { font-size: 1rem; margin-right: 4px; }
+.cmp-points { max-width: 38em; padding-left: 1.2em; margin: 16px 0; }
+.cmp-points li { margin-bottom: 8px; }
+@media (max-width: 520px) {
+  .cmp-row { grid-template-columns: 1fr; }
+  .cmp-when { grid-row: auto; }
+}

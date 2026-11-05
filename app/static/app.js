@@ -148,6 +148,20 @@ const I18N = {
     lead: (h) => `${h} sa`,
     verTechNote: "Canlı: sistemin gerçek zamanlı kayıtları. Sonradan hesaplanan: GitHub planlı bir güncellemeyi atladığında, o saatin tahmini bir sonraki güncellemede o saate kadar gözlenmiş raporlarla (sonradan yayımlanan düzeltmeler dahil) hesaplanır ve canlı kayıtlardan ayrı tutulur. Geriye dönük: sistem ilk açıldığında önceki 72 saatin aynı kodla yeniden hesaplanması. POD, sislerin ne kadarının önceden bildirildiğini (isabet oranı); FAR, uyarıların ne kadarının boşa çıktığını (yanlış alarm oranı) gösterir. CSI kritik başarı indeksidir, 1 en iyisidir. Brier skoru olasılık hatasıdır, 0 en iyisidir. Hiç sis görülmediyse POD, FAR ve CSI hesaplanamaz (–).",
 
+    cmpTitle: "Neden bu model? 13 yöntemin yarışı",
+    cmpLead: "Bu sitedeki model, 13 farklı yapay zekâ yöntemi aynı kurallarla yarıştırıldıktan sonra seçildi. Yöntemler, hiçbirinin daha önce görmediği 2022–2026 kışlarında sınandı ve bugün kullanılan en basit yaklaşımla, yani “şimdi sis varsa sonra da var” demekle karşılaştırıldı.",
+    cmpQ: "100 sisin kaçı önceden bilindi?",
+    cmpSeries: ["yapay zekâ (en iyi yöntem)", "şimdi sis varsa sonra da var"],
+    cmpRows: [["1 saat önce", 83, 79], ["3 saat önce", 55, 49], ["6 saat önce", 54, 23]],
+    cmpNote: "Uyarıların doğru çıkma oranı da yükseldi: 100 uyarının 86'sı, 74'ü ve 48'i doğru çıktı (en basit yaklaşımda 79, 49 ve 23).",
+    cmpPoints: [
+      "Bir saat sonrası için karar ağacı yöntemleri ve kararını adım adım gösterebilen açıklanabilir bir model (EBM) en iyiler arasında.",
+      "Üç ila altı saat sonrası için son 12 saati hafızasında tutan sinir ağları (LSTM, GRU) öne çıkıyor.",
+      "En tutarlısı, yöntemleri birleştiren bir topluluk. Bu site, genel sıralamada ikinci gelen ve birkaç saniyede eğitilebilen LightGBM'i kullanıyor; böylece hem hızlı hem açıklanabilir kalıyor.",
+      "Öndeki yöntemler arasındaki farkların çoğu istatistiksel olarak anlamlı değil; asıl büyük fark, bu yöntemlerle bugünkü basit yaklaşımlar arasında.",
+    ],
+    cmpLink: "Ayrıntılar: herkes için özet (PDF)",
+    cmpHref: "https://github.com/AtaSakik/esenboga-fog-nowcasting/blob/main/report/Herkes_Icin_Ozet.pdf",
     aboutTitle: "Bu site nasıl çalışıyor?",
     step1: "Esenboğa'nın son 7 güne ait hava raporları yarım saatte bir otomatik olarak indirilir. Ücretsiz sunucu bazen bir güncellemeyi geciktirir ya da atlar; atlanan saatlerin tahminleri bir sonraki güncellemede tamamlanır.",
     step2: "2005–2019 yıllarının gözlemleriyle eğitilen bir yapay zekâ modeli (LightGBM), önümüzdeki 1–6 saatin her biri için sis olasılığını hesaplar.",
@@ -312,6 +326,20 @@ const I18N = {
     lead: (h) => `${h} h`,
     verTechNote: "Live: the system's real-time records. Catch-up: when GitHub skips a scheduled update, the forecast for that time is computed at the next update from the reports observed up to that time (including any later corrections), and kept apart from the live records. Replay: the 72 hours before the first start, recomputed with the same code. POD is the share of fog that was forecast (hit rate); FAR is the share of warnings that were false alarms. CSI is the critical success index (1 is best). The Brier score is the probability error (0 is best). Without any fog, POD, FAR and CSI cannot be computed (–).",
 
+    cmpTitle: "Why this model? A contest of 13 methods",
+    cmpLead: "The model on this site was chosen after 13 different machine-learning methods competed under the same rules. They were tested on the 2022–2026 winters, which none of them had seen, and compared with the simplest approach in use today: assuming that if there is fog now, there will be fog later.",
+    cmpQ: "Out of 100 fogs, how many were known in advance?",
+    cmpSeries: ["machine learning (best method)", "fog now = fog later"],
+    cmpRows: [["1 hour ahead", 83, 79], ["3 hours ahead", 55, 49], ["6 hours ahead", 54, 23]],
+    cmpNote: "Warnings also became more reliable: 86, 74 and 48 out of 100 warnings came true (79, 49 and 23 for the simplest approach).",
+    cmpPoints: [
+      "For the next hour, decision-tree methods and an explainable model that shows its reasoning step by step (EBM) are among the best.",
+      "Three to six hours ahead, neural networks that remember the last 12 hours (LSTM, GRU) lead.",
+      "The most consistent is an ensemble that combines the methods. This site uses LightGBM, second overall and trained in a few seconds, so it stays fast and explainable.",
+      "Most differences among the leading methods are not statistically significant; the big gap is between these methods and today's simple approaches.",
+    ],
+    cmpLink: "Details: the research paper (PDF)",
+    cmpHref: "https://github.com/AtaSakik/esenboga-fog-nowcasting/blob/main/report/Esenboga_LowVisibility_Nowcasting_IEEE_EN.pdf",
     aboutTitle: "How this site works",
     step1: "Esenboğa's weather reports for the last 7 days are downloaded automatically every half hour. The free server sometimes delays or skips an update; the forecasts for skipped times are filled in at the next update.",
     step2: "A machine-learning model (LightGBM), trained on observations from 2005–2019, computes the chance of fog for each of the next 1 to 6 hours.",
@@ -516,6 +544,13 @@ function applyStatic() {
   $("cats").innerHTML = L.cats.map(([k, v], i) =>
     `<li><span class="key c${i + 1}" aria-hidden="true"></span><span><b>${esc(k)}.</b> ${esc(v)}</span></li>`).join("");
   $("terms").innerHTML = L.terms.map(([k, v]) => `<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join("");
+  $("cmp").innerHTML = L.cmpRows.map(([when, ml, base]) =>
+    `<div class="cmp-row"><span class="cmp-when">${esc(when)}</span>` +
+    [[ml, "ml", L.cmpSeries[0]], [base, "base", L.cmpSeries[1]]].map(([v, cls, name]) =>
+      `<span class="cmp-bar ${cls}"><span class="fill" style="width:${v}%"></span>` +
+      `<span class="cmp-val"><b>${v}</b> ${esc(name)}</span></span>`).join("") + "</div>").join("");
+  $("cmp-points").innerHTML = L.cmpPoints.map((p) => `<li>${esc(p)}</li>`).join("");
+  $("cmp-link").href = L.cmpHref;
 }
 
 function renderHero() {
