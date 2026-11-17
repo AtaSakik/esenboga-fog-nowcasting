@@ -101,6 +101,9 @@ GitHub Pages. The prediction database is kept on the single-commit branch `live-
 often delays or skips runs, so each run, which downloads the last 7 days of reports, also computes the forecasts for
 the issue times skipped during roughly the previous three days from the reports observed up to those times (later
 corrections included) and stores them as `mode='catchup'`, separately from the real-time (`mode='live'`) record.
+The same mechanism makes a failed save harmless: GitHub now and then refuses a push for a minute or two, so the run
+retries, and if the record still cannot be saved it ends with a warning and leaves the site to the next run. A run
+fails, and GitHub e-mails the owner, only when no record has been saved for over 2 hours.
 
 Runs start at HH:10 and HH:40 UTC, because aviationweather.gov receives the routine METARs of HH:20 and HH:50
 8–17 minutes after their observation time. For punctual runs, an external scheduler such as

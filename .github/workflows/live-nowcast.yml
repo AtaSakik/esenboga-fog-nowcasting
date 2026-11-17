@@ -43,6 +43,8 @@ jobs:
           if [ "$status" -eq 0 ]; then
             git fetch --depth 1 origin live-data
             git show FETCH_HEAD:live_predictions.sqlite > live/live_predictions.sqlite
+            # Unix time of the last saved record, used when this run cannot save its own
+            echo "LAST_SAVED=$(git log -1 --format=%ct FETCH_HEAD)" >> "$GITHUB_ENV"
           elif [ "$status" -eq 2 ]; then
             cp logs/live_predictions.sqlite live/live_predictions.sqlite
           else
@@ -63,6 +65,7 @@ jobs:
         run: python app/publish_static.py --db live/live_predictions.sqlite --out site
 
       - name: Save the database to the live-data branch
+        id: save
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -73,26 +76,49 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add live_predictions.sqlite verification.json
           git commit -q -m "Live nowcast log $(date -u +%Y-%m-%dT%H:%MZ)"
-          # GitHub occasionally rejects a push with a transient server error (e.g. "fatal error in
-          # commit_refs_rules"); retry a few times before failing the run
+          # GitHub occasionally rejects a push for a while: a server error, "fatal error in
+          # commit_refs_rules", or a 403 for the Actions token although it has contents: write
+          saved=false
           for attempt in 1 2 3 4; do
             if git push -q -f "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" live-data; then
+              saved=true
               break
-            elif [ "$attempt" -eq 4 ]; then
-              echo "push to live-data failed $attempt times" >&2
+            elif [ "$attempt" -lt 4 ]; then
+              echo "push attempt $attempt failed; retrying in $((attempt * 15)) s" >&2
+              sleep $((attempt * 15))
+            fi
+          done
+          echo "saved=$saved" >> "$GITHUB_OUTPUT"
+          if [ "$saved" = false ]; then
+            echo "push to live-data failed 4 times" >&2
+            # A single failure repairs itself: the next run restores the last saved record and
+            # recomputes the missed issue times (catch-up, up to ~68 h back), and the site waits
+            # for that run. So the run fails, and GitHub sends its failure e-mail, only when no
+            # record exists or none has been saved for over 2 hours (about 4 failed runs in a
+            # row); otherwise it ends with a warning on the run page.
+            if [ -z "${LAST_SAVED:-}" ]; then
+              echo "no saved record exists" >&2
               exit 1
             fi
-            echo "push attempt $attempt failed; retrying in $((attempt * 15)) s" >&2
-            sleep $((attempt * 15))
-          done
+            unsaved_min=$(( ($(date +%s) - LAST_SAVED) / 60 ))
+            if [ "$unsaved_min" -gt 120 ]; then
+              echo "the record has not been saved for $unsaved_min min" >&2
+              exit 1
+            fi
+            echo "::warning::Record not saved this time (last saved $unsaved_min min ago); the next run saves it and recomputes the missed issue times."
+          fi
 
-      - uses: actions/configure-pages@v6
-      - uses: actions/upload-pages-artifact@v5
+      # The site is published only together with a saved record
+      - if: steps.save.outputs.saved == 'true'
+        uses: actions/configure-pages@v6
+      - if: steps.save.outputs.saved == 'true'
+        uses: actions/upload-pages-artifact@v5
         with:
           path: site
       # Right after the upload the artifact service sometimes does not list the artifact yet
       # ("No artifacts named github-pages were found"); in that case wait and deploy once more.
       - id: deploy
+        if: steps.save.outputs.saved == 'true'
         uses: actions/deploy-pages@v5
         continue-on-error: true
       - name: Wait before retrying the deployment
